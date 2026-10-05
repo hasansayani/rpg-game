@@ -1,0 +1,72 @@
+import SwiftUI
+
+struct RootView: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        if model.settings.age == nil {
+            AgeGateView { age in model.settings.age = age }
+        } else {
+            RealmMapView()
+        }
+    }
+}
+
+// MARK: - Age gate
+
+/// First-launch question. The answer tunes visuals, difficulty and how Lumi explains things.
+struct AgeGateView: View {
+    var initialAge = 10
+    var onDone: (Int) -> Void
+    @State private var age = 10
+
+    var body: some View {
+        let band = AgeBand(age: age)
+        ZStack {
+            LinearGradient(colors: [Color(red: 0.16, green: 0.12, blue: 0.4), Color(red: 1, green: 0.62, blue: 0.4)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+            HStack(spacing: 40) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("MYTHRUNNER")
+                        .font(.system(size: 40, weight: .heavy, design: .rounded))
+                    Text("Ride through 30 realms of world mythology with Lumi, your spirit guide.")
+                        .font(.title3.weight(.semibold))
+                    Text("How old are you?")
+                        .font(.title2.weight(.bold))
+                        .padding(.top, 8)
+                    Text("We use this to tune colors, speed and how Lumi tells the stories. It stays on this device.")
+                        .font(.callout)
+                        .opacity(0.85)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: 380, alignment: .leading)
+
+                VStack(spacing: 14) {
+                    Picker("Age", selection: $age) {
+                        ForEach(4...99, id: \.self) { Text("\($0)").tag($0) }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(width: 140, height: 140)
+                    .clipped()
+                    .background(.white.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
+
+                    Text(band.title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Button {
+                        onDone(age)
+                    } label: {
+                        Text("Let's go")
+                            .font(.title3.weight(.heavy))
+                            .padding(.horizontal, 36).padding(.vertical, 12)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color(red: 1, green: 0.3, blue: 0.43))
+                }
+            }
+            .padding(24)
+        }
+        .onAppear { age = initialAge }
+    }
+}

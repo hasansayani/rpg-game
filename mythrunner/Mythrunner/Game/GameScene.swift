@@ -1,0 +1,632 @@
+import SpriteKit
+import UIKit
+
+/// Renders a RunSession. All game rules live in Core/RunSession; this class only draws,
+/// plays feedback, and forwards touches — which keeps a Godot port mechanical.
+final class GameScene: SKScene {
+    struct Setup {
+        var realm: Realm
+        var totalRealms: Int
+        var tuning: AgeTuning
+        var mode: GuardianMode
+        var companion: CompanionScript
+        var haptics: Bool
+    }
+
+    var onFinish: ((RunResult) -> Void)?
+    var onPause: (() -> Void)?
+
+    let setup: Setup
+    let session: RunSession
+    private let palette: ResolvedPalette
+
+    // Layers
+    private let cam = SKCameraNode()
+    private let world = SKNode()
+    private let skyLayer = SKNode()
+    private var parallax: [(node: SKNode, sprites: [SKSpriteNode], factor: CGFloat, yFactor: CGFloat, baseY: CGFloat)] = []
+    private let hud = SKNode()
+
+    // Actors
+    private var player: PlayerNode!
+    private var lumi: CompanionNode!
+    private var bubble: SpeechBubble!
+    private var guardianNode: GuardianNode!
+    private var relicNodes: [SKSpriteNode] = []
+    private var projectileNodes: [Int: SKSpriteNode] = [:]
+    private var warningNodes: [Int: SKSpriteNode] = [:]
+    private var weakPointNode: SKSpriteNode!
+
+    // Terrain chunks (generated lazily, recycled)
+    private let chunkWidth: CGFloat = 600
+    private var chunks: [Int: SKSpriteNode] = [:]
+
+    // HUD
+    private var hearts: [SKSpriteNode] = []
+    private var progressFill: SKSpriteNode!
+    private var progressTrack: SKShapeNode!
+    private var relicLabel: SKLabelNode!
+    private var pauseButton: SKShapeNode!
+    private var banner: SKNode!
+    private var vignette: SKSpriteNode?
+
+    // Cached textures
+    private var dot: SKTexture!
+    private var lowTex: SKTexture!
+    private var highTex: SKTexture!
+    private var warnTex: SKTexture!
+    private var heartTex: SKTexture!
+
+    private var events = SessionEvents()
+    private var lastTime: TimeInterval = 0
+    private var finishTimer: Double?
+    private var built = false
+    private let haptics = Haptics()
+
+    init(size: CGSize, setup: Setup) {
+        self.setup = setup
+        session = RunSession(realm: setup.realm, totalRealms: setup.totalRealms, tuning: setup.tuning,
+                             mode: setup.mode, companion: setup.companion)
+        palette = ResolvedPalette(palette: setup.realm.palette, guardianHex: setup.realm.guardian.color,
+                                  tuning: setup.tuning)
+        super.init(size: size)
+        scaleMode = .resizeFill
+        backgroundColor = palette.skyBottom.skColor
+        haptics.enabled = setup.haptics
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    // MARK: Build
+
+    override func didMove(to view: SKView) {
+        guard !built else { return }
+        built = true
+        view.ignoresSiblingOrder = true
+
+        dot = TextureFactory.softDot()
+        lowTex = TextureFactory.projectile(color: palette.guardian.lighter(0.1), high: false)
+        highTex = TextureFactory.projectile(color: palette.accent, high: true)
+        warnTex = TextureFactory.warningMarker(color: palette.accent)
+        heartTex = TextureFactory.heart(color: RGBA(hex: "#FF4D6D"))
+
+        addChild(cam)
+        camera = cam
+        addChild(world)
+        cam.addChild(skyLayer)
+        cam.addChild(hud)
+        skyLayer.zPosition = -100
+        hud.zPosition = 100
+
+        buildSky()
+        buildParallax()
+        buildActors()
+        buildHUD()
+        layout()
+
+        cam.position = CGPoint(x: CGFloat(session.runner.x) + size.width * 0.18, y: max(CGFloat(session.runner.y) + 40, size.height / 2))
+        updateChunks()
+        showBanner(title: setup.realm.name,
+                   subtitle: "\(setup.realm.culture) · \(setup.realm.place) · \(setup.realm.era)", hold: 2.8)
+    }
+
+    private func buildSky() {
+        let sky = SKSpriteNode(texture: TextureFactory.skyGradient(top: palette.skyTop, bottom: palette.skyBottom))
+        sky.name = "sky"
+        skyLayer.addChild(sky)
+
+        // Sun or moon, with a soft halo.
+        let halo = SKSpriteNode(texture: dot)
+        halo.color = palette.accent.lighter(0.4).skColor
+        halo.colorBlendFactor = 1
+        halo.blendMode = .add
+        halo.alpha = 0.6
+        halo.name = "halo"
+        skyLayer.addChild(halo)
+        let sun = SKSpriteNode(texture: TextureFactory.disc(diameter: 64, color: palette.skyBottom.lighter(0.65)))
+        sun.name = "sun"
+        skyLayer.addChild(sun)
+
+        if setup.realm.scenery.weather == .aurora {
+            for i in 0..<3 {
+                let band = SKSpriteNode(texture: dot)
+                band.color = (i == 1 ? RGBA(hex: "#B388FF") : palette.accent).skColor
+                band.colorBlendFactor = 1
+                band.blendMode = .add
+                band.alpha = 0.22
+                band.name = "aurora\(i)"
+                band.run(.repeatForever(.sequence([.fadeAlpha(to: 0.4, duration: 2 + Double(i)),
+                                                   .fadeAlpha(to: 0.12, duration: 2 + Double(i))])))
+                skyLayer.addChild(band)
+            }
+        }
+    }
+
+    private func buildParallax() {
+        let s = setup.realm.scenery
+        let seed = setup.realm.seed
+        let layers: [(SceneryPainter.Depth, RGBA, CGFloat, CGFloat, CGFloat, CGFloat)] = [
+            // depth, color, texture height, x factor, y factor, base y (fraction of screen from bottom)
+            (.far, palette.far, 300, 0.08, 0.05, 0.10),
+            (.mid, palette.mid, 240, 0.22, 0.12, 0.02),
+            (.near, palette.near, 200, 0.45, 0.25, -0.10),
+        ]
+        for (i, l) in layers.enumerated() {
+            let tex = SceneryPainter.layer(scenery: s, depth: l.0, color: l.1, height: l.2, seed: seed &+ UInt64(i))
+            let node = SKNode()
+            node.zPosition = -90 + CGFloat(i) * 5
+            var sprites: [SKSpriteNode] = []
+            for j in 0..<3 {
+                let sp = SKSpriteNode(texture: tex)
+                sp.anchorPoint = CGPoint(x: 0, y: 0)
+                sp.position.x = CGFloat(j) * SceneryPainter.tileWidth
+                node.addChild(sp)
+                sprites.append(sp)
+            }
+            cam.addChild(node)
+            parallax.append((node: node, sprites: sprites, factor: l.3, yFactor: l.4, baseY: l.5))
+
+            // Atmospheric fog in front of each distant layer (stronger for older players).
+            if i < 2 {
+                let fog = SKSpriteNode(texture: TextureFactory.verticalFade(color: palette.skyBottom, topAlpha: 0,
+                                                                             bottomAlpha: setup.tuning.fogStrength + 0.25))
+                fog.anchorPoint = CGPoint(x: 0.5, y: 0)
+                fog.zPosition = node.zPosition + 2
+                fog.name = "fog\(i)"
+                cam.addChild(fog)
+            }
+        }
+    }
+
+    private func buildActors() {
+        // Obstacles (static; created once).
+        let rockTex = TextureFactory.rock(color: palette.near.mixed(with: palette.groundEdge, 0.35))
+        for o in session.course.obstacles {
+            let rock = SKSpriteNode(texture: rockTex)
+            rock.anchorPoint = CGPoint(x: 0.5, y: 0)
+            rock.size = CGSize(width: o.width + 8, height: o.height + 6)
+            rock.position = CGPoint(x: o.x, y: session.course.surface(at: o.x) - 6)
+            rock.zPosition = 5
+            world.addChild(rock)
+        }
+
+        let relicTex = TextureFactory.relic(color: palette.accent)
+        for r in session.course.relics {
+            let node = SKSpriteNode(texture: relicTex)
+            node.position = CGPoint(x: r.x, y: session.course.surface(at: r.x) + r.lift)
+            node.zPosition = 6
+            node.run(.repeatForever(.sequence([.moveBy(x: 0, y: 8, duration: 0.7), .moveBy(x: 0, y: -8, duration: 0.7)])))
+            node.run(.repeatForever(.sequence([.scale(to: 1.15, duration: 0.5), .scale(to: 1, duration: 0.5)])))
+            world.addChild(node)
+            relicNodes.append(node)
+        }
+
+        player = PlayerNode(body: RGBA(hex: "#2B2D42"), board: palette.accent,
+                            scarfColor: RGBA(hex: "#FF4D6D"), spark: dot)
+        player.zPosition = 10
+        player.setTrailTarget(world)
+        world.addChild(player)
+
+        lumi = CompanionNode(dot: dot, color: palette.accent.lighter(0.3))
+        lumi.zPosition = 12
+        lumi.position = CGPoint(x: session.runner.x, y: session.runner.y + 90)
+        world.addChild(lumi)
+
+        guardianNode = GuardianNode(shape: setup.realm.guardian.shape, color: palette.guardian,
+                                    eye: palette.accent, cute: setup.tuning.cuteGuardians, dot: dot)
+        guardianNode.zPosition = 8
+        guardianNode.alpha = 0
+        guardianNode.isHidden = true
+        world.addChild(guardianNode)
+
+        weakPointNode = SKSpriteNode(texture: dot)
+        weakPointNode.color = palette.accent.skColor
+        weakPointNode.colorBlendFactor = 1
+        weakPointNode.blendMode = .add
+        weakPointNode.size = CGSize(width: 70, height: 70)
+        weakPointNode.zPosition = 9
+        weakPointNode.isHidden = true
+        weakPointNode.run(.repeatForever(.sequence([.scale(to: 1.25, duration: 0.3), .scale(to: 0.9, duration: 0.3)])))
+        world.addChild(weakPointNode)
+
+        if let weather = WeatherFactory.make(setup.realm.scenery.weather, palette: palette, dot: dot,
+                                             width: size.width, height: size.height,
+                                             scale: setup.tuning.particleScale) {
+            weather.targetNode = world
+            weather.zPosition = 20
+            weather.name = "weather"
+            cam.addChild(weather)
+            weather.advanceSimulationTime(5)
+        }
+    }
+
+    private func buildHUD() {
+        for _ in 0..<session.runner.config.hearts {
+            let h = SKSpriteNode(texture: heartTex)
+            h.size = CGSize(width: 24, height: 21)
+            hud.addChild(h)
+            hearts.append(h)
+        }
+
+        progressTrack = SKShapeNode(rectOf: CGSize(width: 220, height: 10), cornerRadius: 5)
+        progressTrack.fillColor = UIColor(white: 0, alpha: 0.25)
+        progressTrack.strokeColor = UIColor(white: 1, alpha: 0.6)
+        progressTrack.lineWidth = 1.5
+        hud.addChild(progressTrack)
+        progressFill = SKSpriteNode(color: palette.accent.skColor, size: CGSize(width: 216, height: 6))
+        progressFill.anchorPoint = CGPoint(x: 0, y: 0.5)
+        hud.addChild(progressFill)
+
+        relicLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        relicLabel.fontSize = 16
+        relicLabel.fontColor = .white
+        relicLabel.horizontalAlignmentMode = .left
+        relicLabel.verticalAlignmentMode = .center
+        hud.addChild(relicLabel)
+
+        pauseButton = SKShapeNode(circleOfRadius: 20)
+        pauseButton.fillColor = UIColor(white: 0, alpha: 0.25)
+        pauseButton.strokeColor = UIColor(white: 1, alpha: 0.8)
+        pauseButton.lineWidth = 2
+        pauseButton.name = "pause"
+        for dx in [-5, 5] as [CGFloat] {
+            let bar = SKSpriteNode(color: .white, size: CGSize(width: 4, height: 14))
+            bar.position.x = dx
+            pauseButton.addChild(bar)
+        }
+        hud.addChild(pauseButton)
+
+        bubble = SpeechBubble(name: setup.companion.name, fill: RGBA(r: 1, g: 1, b: 1),
+                              accent: palette.accent.darker(0.15), textScale: CGFloat(setup.tuning.textScale))
+        hud.addChild(bubble)
+
+        banner = SKNode()
+        hud.addChild(banner)
+
+        if setup.tuning.vignette > 0 {
+            let v = SKSpriteNode(texture: TextureFactory.vignette(size: CGSize(width: 256, height: 256)))
+            v.alpha = CGFloat(setup.tuning.vignette)
+            v.zPosition = -1
+            hud.addChild(v)
+            vignette = v
+        }
+        updateHUD()
+    }
+
+    override func didChangeSize(_ oldSize: CGSize) {
+        super.didChangeSize(oldSize)
+        if built { layout() }
+    }
+
+    /// Positions everything that is attached to the camera (screen space, origin at screen center).
+    private func layout() {
+        let w = size.width, h = size.height
+        let safe = view?.safeAreaInsets ?? .zero
+        let left = -w / 2 + max(safe.left, 16) + 8, top = h / 2 - max(safe.top, 12) - 16
+        let right = w / 2 - max(safe.right, 16) - 8
+
+        if let sky = skyLayer.childNode(withName: "sky") as? SKSpriteNode { sky.size = CGSize(width: w + 4, height: h + 4) }
+        if let sun = skyLayer.childNode(withName: "sun") { sun.position = CGPoint(x: w * 0.28, y: h * 0.22) }
+        if let halo = skyLayer.childNode(withName: "halo") as? SKSpriteNode {
+            halo.position = CGPoint(x: w * 0.28, y: h * 0.22)
+            halo.size = CGSize(width: 260, height: 260)
+        }
+        for i in 0..<3 {
+            if let band = skyLayer.childNode(withName: "aurora\(i)") as? SKSpriteNode {
+                band.size = CGSize(width: w * 1.3, height: h * 0.35)
+                band.position = CGPoint(x: CGFloat(i - 1) * w * 0.2, y: h * 0.25 - CGFloat(i) * 18)
+            }
+        }
+        for (i, layer) in parallax.enumerated() {
+            layer.node.position.y = -h / 2 + h * layer.baseY
+            if let fog = cam.childNode(withName: "fog\(i)") as? SKSpriteNode {
+                fog.size = CGSize(width: w + 4, height: h * 0.45)
+                fog.position = CGPoint(x: 0, y: layer.node.position.y)
+            }
+        }
+        if let weather = cam.childNode(withName: "weather") as? SKEmitterNode {
+            weather.particlePositionRange.dx = max(weather.particlePositionRange.dx, w * 1.4)
+        }
+
+        for (i, heart) in hearts.enumerated() {
+            heart.position = CGPoint(x: left + 12 + CGFloat(i) * 28, y: top)
+        }
+        relicLabel.position = CGPoint(x: left, y: top - 30)
+        progressTrack.position = CGPoint(x: 0, y: top)
+        progressFill.position = CGPoint(x: -108, y: top)
+        pauseButton.position = CGPoint(x: right - 12, y: top - 4)
+        bubble.position = CGPoint(x: 0, y: top - 26)
+        banner.position = CGPoint(x: 0, y: h * 0.12)
+        vignette?.size = CGSize(width: w, height: h)
+    }
+
+    // MARK: Input
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let p = touch.location(in: hud)
+        if pauseButton.contains(p) {
+            onPause?()
+            return
+        }
+        session.press()
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) { session.release() }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { session.release() }
+
+    /// Called when resuming from the SwiftUI pause menu so the long pause isn't simulated.
+    func resetClock() { lastTime = 0 }
+
+    // MARK: Loop
+
+    override func update(_ currentTime: TimeInterval) {
+        let dt = lastTime == 0 ? 1.0 / 60 : min(currentTime - lastTime, 1.0 / 20)
+        lastTime = currentTime
+
+        events.clear()
+        session.advance(dt, into: &events)
+        handle(events, time: currentTime)
+
+        let runner = session.runner
+        player.update(runner: runner, time: currentTime)
+        lumi.follow(player.position, time: currentTime, dt: CGFloat(dt))
+        updateCamera(dt: CGFloat(dt))
+        updateParallax()
+        updateChunks()
+        updateGuardian(time: currentTime)
+        updateHUD()
+
+        if let t = finishTimer {
+            finishTimer = t - dt
+            if t - dt <= 0 {
+                finishTimer = nil
+                onFinish?(session.result)
+            }
+        }
+    }
+
+    private func handle(_ e: SessionEvents, time: TimeInterval) {
+        for ev in e.runner {
+            switch ev {
+            case .jumped: haptics.light()
+            case .landed(let flips) where flips > 0:
+                haptics.success()
+                popText(flips > 1 ? "\(flips)× FLIP!" : "FLIP!", at: player.position)
+            case .crashed, .fellInGap, .hitObstacle, .hurt:
+                haptics.heavy()
+                shake()
+            default: break
+            }
+        }
+        for i in e.relicsCollected {
+            let node = relicNodes[i]
+            node.removeAllActions()
+            node.run(.sequence([.group([.scale(to: 2.2, duration: 0.25), .fadeOut(withDuration: 0.25)]), .removeFromParent()]))
+            haptics.success()
+            lumi.ping()
+        }
+        for ev in e.guardian {
+            switch ev {
+            case .caught:
+                guardianNode.roar()
+            case .projectileHit(let id):
+                guardianNode.roar()
+                projectileNodes.removeValue(forKey: id)?.removeFromParent()
+                warningNodes.removeValue(forKey: id)?.removeFromParent()
+            case .weakPointBroken:
+                haptics.success()
+                shake()
+                guardianNode.roar()
+                popText("HIT!", at: weakPointNode.position)
+            case .projectileGone(let id):
+                projectileNodes.removeValue(forKey: id)?.removeFromParent()
+                warningNodes.removeValue(forKey: id)?.removeFromParent()
+            default: break
+            }
+        }
+        if let line = e.companionLine {
+            lumi.ping()
+            bubble.show(line.text, maxWidth: min(size.width * 0.55, 460),
+                        duration: CompanionDirector.duration(for: line.text, scale: setup.tuning.bubbleDurationScale))
+        }
+        if let phase = e.phaseChanged {
+            switch phase {
+            case .guardian:
+                guardianNode.isHidden = false
+                guardianNode.run(.fadeIn(withDuration: 0.6))
+                guardianNode.roar()
+                shake()
+                haptics.heavy()
+                showBanner(title: setup.realm.guardian.name.uppercased(),
+                           subtitle: session.mode.title + " — " + session.mode.instruction.text(for: session.variant),
+                           hold: 3.2)
+            case .won:
+                guardianNode.run(.sequence([.fadeOut(withDuration: 0.8), .hide()]))
+                showBanner(title: "REALM COMPLETE", subtitle: setup.realm.name, hold: 2.5)
+                haptics.success()
+                finishTimer = 2.6
+            case .lost:
+                showBanner(title: "TRY AGAIN", subtitle: "Every myth has a second chance", hold: 2.5)
+                finishTimer = 2.2
+            case .run: break
+            }
+        }
+    }
+
+    // MARK: Camera, parallax, terrain
+
+    private func updateCamera(dt: CGFloat) {
+        let r = session.runner
+        // Keep the rider left of center; in chase mode slide right so the pursuer is visible.
+        let lead: CGFloat = session.phase == .guardian && session.mode == .chase ? -size.width * 0.08 : size.width * 0.18
+        let targetX = CGFloat(r.x) + lead
+        let targetY = max(CGFloat(r.y) + 50, size.height / 2)
+        let k = min(1, dt * 6)
+        cam.position.x += (targetX - cam.position.x) * min(1, dt * 10)
+        cam.position.y += (targetY - cam.position.y) * k
+    }
+
+    private func updateParallax() {
+        let tile = SceneryPainter.tileWidth
+        for layer in parallax {
+            let offset = (cam.position.x * layer.factor).truncatingRemainder(dividingBy: tile)
+            layer.node.position.x = -size.width / 2 - offset
+            layer.node.position.y = -size.height / 2 + size.height * layer.baseY
+                - (cam.position.y - size.height / 2) * layer.yFactor
+        }
+    }
+
+    private func updateChunks() {
+        let left = cam.position.x - size.width / 2
+        let right = cam.position.x + size.width / 2
+        let first = Int(floor(left / chunkWidth)) - 1
+        let last = Int(floor(right / chunkWidth)) + 1
+        var created = 0
+        for i in first...last where chunks[i] == nil && i >= -1 {
+            // Spread texture generation: at most one new chunk per frame after the first frame.
+            if created > 0 && lastTime != 0 { break }
+            let height = CGFloat(session.course.maxSurface + 30)
+            let tex = TextureFactory.terrainChunk(course: session.course, x0: Double(CGFloat(i) * chunkWidth),
+                                                  width: chunkWidth + 2, height: height,
+                                                  ground: palette.ground, edge: palette.groundEdge)
+            let sprite = SKSpriteNode(texture: tex)
+            sprite.anchorPoint = .zero
+            sprite.position = CGPoint(x: CGFloat(i) * chunkWidth, y: 0)
+            sprite.zPosition = 4
+            world.addChild(sprite)
+            chunks[i] = sprite
+            created += 1
+        }
+        for (i, node) in chunks where i < first - 1 {
+            node.removeFromParent()
+            chunks.removeValue(forKey: i)
+        }
+    }
+
+    // MARK: Guardian
+
+    private func updateGuardian(time: TimeInterval) {
+        guard let g = session.guardian else { return }
+        let r = session.runner
+        let course = session.course
+        let gx: CGFloat
+        switch g.mode {
+        case .chase: gx = CGFloat(g.chaserX)
+        case .gauntlet: gx = CGFloat(r.x) + size.width * 0.4
+        case .weakpoint: gx = CGFloat(g.weakPoint?.x ?? r.x + 700) + 120
+        }
+        let ground = CGFloat(course.surface(at: Double(gx)))
+        let gy = ground + guardianNode.hoverHeight + (g.mode == .chase ? 0 : 20)
+        guardianNode.position = CGPoint(x: gx, y: gy)
+        guardianNode.xScale = g.mode == .chase ? 1 : -1  // face the player
+        guardianNode.animate(time: time) { CGFloat(course.surface(at: Double($0))) }
+
+        // Weak point
+        if let wp = g.weakPoint {
+            weakPointNode.isHidden = false
+            weakPointNode.position = CGPoint(x: wp.x, y: course.surface(at: wp.x) + wp.lift)
+        } else {
+            weakPointNode.isHidden = true
+        }
+
+        // Projectiles + warnings
+        for p in g.projectiles {
+            if p.warning > 0 {
+                let warn = warningNodes[p.id] ?? {
+                    let n = SKSpriteNode(texture: warnTex)
+                    n.run(.repeatForever(.sequence([.fadeAlpha(to: 0.3, duration: 0.12), .fadeAlpha(to: 1, duration: 0.12)])))
+                    hud.addChild(n)
+                    warningNodes[p.id] = n
+                    return n
+                }()
+                let worldY = CGFloat(course.surface(at: p.x) + p.lift)
+                warn.position = CGPoint(x: size.width / 2 - 40, y: min(max(worldY - cam.position.y, -size.height / 2 + 30), size.height / 2 - 60))
+            } else {
+                warningNodes.removeValue(forKey: p.id)?.removeFromParent()
+                let node = projectileNodes[p.id] ?? {
+                    let n = SKSpriteNode(texture: p.kind == .low ? lowTex : highTex)
+                    n.zPosition = 9
+                    n.blendMode = p.kind == .high ? .add : .alpha
+                    if p.kind == .low { n.run(.repeatForever(.rotate(byAngle: .pi * 2, duration: 0.6))) }
+                    world.addChild(n)
+                    projectileNodes[p.id] = n
+                    return n
+                }()
+                node.position = CGPoint(x: p.x, y: course.surface(at: p.x) + p.lift)
+            }
+        }
+    }
+
+    // MARK: HUD & feedback
+
+    private func updateHUD() {
+        let hp = session.runner.hearts
+        for (i, h) in hearts.enumerated() { h.alpha = i < hp ? 1 : 0.2 }
+        progressFill.xScale = CGFloat(session.progress)
+        progressFill.color = (session.phase == .run ? palette.accent : RGBA(hex: "#FF4D6D")).skColor
+        relicLabel.text = "◆ \(session.collected.count)/\(session.course.relics.count)"
+    }
+
+    private func showBanner(title: String, subtitle: String, hold: Double) {
+        banner.removeAllChildren()
+        banner.removeAllActions()
+        let t = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        t.text = title
+        t.fontSize = 34 * CGFloat(setup.tuning.textScale)
+        t.fontColor = .white
+        t.verticalAlignmentMode = .bottom
+        let sub = SKLabelNode(fontNamed: "AvenirNext-DemiBold")
+        sub.text = subtitle
+        sub.fontSize = 15 * CGFloat(setup.tuning.textScale)
+        sub.fontColor = UIColor(white: 1, alpha: 0.92)
+        sub.verticalAlignmentMode = .top
+        sub.position.y = -6
+        sub.numberOfLines = 2
+        sub.preferredMaxLayoutWidth = size.width * 0.8
+        for label in [t, sub] {
+            let shadow = label.copy() as! SKLabelNode
+            shadow.fontColor = UIColor(white: 0, alpha: 0.35)
+            shadow.position = CGPoint(x: label.position.x + 2, y: label.position.y - 2)
+            shadow.zPosition = -1
+            banner.addChild(shadow)
+            banner.addChild(label)
+        }
+        banner.alpha = 0
+        banner.run(.sequence([.fadeIn(withDuration: 0.3), .wait(forDuration: hold), .fadeOut(withDuration: 0.5)]))
+    }
+
+    private func popText(_ text: String, at worldPoint: CGPoint) {
+        let l = SKLabelNode(fontNamed: "AvenirNext-Heavy")
+        l.text = text
+        l.fontSize = 22
+        l.fontColor = palette.accent.lighter(0.2).skColor
+        l.position = CGPoint(x: worldPoint.x, y: worldPoint.y + 70)
+        l.zPosition = 30
+        world.addChild(l)
+        l.run(.sequence([.group([.moveBy(x: 0, y: 40, duration: 0.8), .fadeOut(withDuration: 0.8)]), .removeFromParent()]))
+    }
+
+    private func shake() {
+        guard setup.tuning.screenShake else { return }
+        let amp: CGFloat = 7
+        let moves = (0..<6).map { i -> SKAction in
+            let s: CGFloat = i % 2 == 0 ? 1 : -1
+            return .moveBy(x: s * amp * CGFloat(6 - i) / 6, y: -s * amp * 0.5, duration: 0.03)
+        }
+        world.removeAction(forKey: "shake")
+        world.run(.sequence(moves + [.move(to: .zero, duration: 0.03)]), withKey: "shake")
+    }
+}
+
+/// Thin wrapper so haptics can be toggled in Settings.
+final class Haptics {
+    var enabled = true
+    private let lightGen = UIImpactFeedbackGenerator(style: .light)
+    private let heavyGen = UIImpactFeedbackGenerator(style: .heavy)
+    private let notifyGen = UINotificationFeedbackGenerator()
+
+    func light() { if enabled { lightGen.impactOccurred(intensity: 0.5) } }
+    func heavy() { if enabled { heavyGen.impactOccurred() } }
+    func success() { if enabled { notifyGen.notificationOccurred(.success) } }
+}

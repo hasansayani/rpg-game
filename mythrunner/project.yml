@@ -1,0 +1,25 @@
+# Fallback for Xcode < 16 (no synchronized folders): `brew install xcodegen && xcodegen`
+name: Mythrunner
+options:
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  Mythrunner:
+    type: application
+    platform: iOS
+    sources:
+      - path: Mythrunner
+        excludes: [Info.plist]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.mythrunner
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Mythrunner/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Mythrunner
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: YES
+        INFOPLIST_KEY_UIStatusBarHidden: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"

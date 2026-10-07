@@ -251,7 +251,7 @@
     {
       "id": "inuit", "order": 15, "name": "Sedna's Ice Sea",
       "culture": "Inuit", "region": "americas", "place": "Arctic Canada, Greenland & Alaska",
-      "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true, "motif": "furTrim",
+      "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true, "motif": "furTrim", "terrain": "water",
       "palette": { "skyTop": "#03045E", "skyBottom": "#48CAE4", "far": "#90E0EF", "mid": "#00B4D8", "near": "#0077B6", "ground": "#FFFFFF", "groundEdge": "#CAF0F8", "accent": "#80FFDB" },
       "scenery": { "far": "icebergs", "landmarks": ["inuksuk", "igloo"], "weather": "aurora", "amplitude": 40, "frequency": 0.9 },
       "facts": [
@@ -484,7 +484,7 @@
     {
       "id": "filipino", "order": 29, "name": "Moon-Eater's Sea",
       "culture": "Filipino (Visayan)", "region": "asia", "place": "Philippines",
-      "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true, "motif": "okir",
+      "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true, "motif": "okir", "terrain": "water",
       "palette": { "skyTop": "#10002B", "skyBottom": "#5A189A", "far": "#7B2CBF", "mid": "#9D4EDD", "near": "#240046", "ground": "#E0AAFF", "groundEdge": "#C77DFF", "accent": "#FFD60A" },
       "scenery": { "far": "karst", "landmarks": ["palm", "hut"], "weather": "fireflies", "amplitude": 50, "frequency": 1.6 },
       "facts": [

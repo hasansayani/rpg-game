@@ -72,6 +72,9 @@ struct Realm: Codable, Identifiable, Hashable {
     var living: Bool
     /// Decorative pattern for the rider's outfit and the guardian's body in this realm.
     var motif: Motif
+    /// `water` realms are swum through instead of run. Omitted in JSON means land.
+    var terrain: Terrain?
+    var isWater: Bool { terrain == .water }
     var palette: Palette
     var scenery: Scenery
     var facts: [Lore]
@@ -131,6 +134,10 @@ struct Scenery: Codable, Hashable {
     var amplitude: Double
     /// Relative hill frequency (1.0 = default rolling).
     var frequency: Double
+}
+
+enum Terrain: String, Codable {
+    case land, water
 }
 
 enum FarStyle: String, Codable, CaseIterable {

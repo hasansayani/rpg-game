@@ -30,7 +30,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Player")
                 } footer: {
-                    Text("Younger players get brighter colors, gentler hills, more hearts and simpler stories. Older players get moodier skies, more speed and fuller history.")
+                    Text("Younger players get brighter colors, gentler hills, closer checkpoints and simpler stories. Older players get moodier skies, more speed and fuller history.")
                 }
 
                 Section("Feel") {

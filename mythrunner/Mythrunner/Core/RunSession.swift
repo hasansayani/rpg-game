@@ -8,6 +8,10 @@ struct SessionEvents {
     var pickups: [Pickup] = []
     var phaseChanged: RunSession.Phase?
     var companionLine: CompanionLine?
+    /// The runner failed this tick; it will respawn after `RunSession.respawnDelay`.
+    var failed = false
+    /// The runner was just put back at a checkpoint (or the guardian encounter restarted).
+    var respawned = false
 
     mutating func clear() {
         runner.removeAll(keepingCapacity: true)
@@ -16,6 +20,8 @@ struct SessionEvents {
         pickups.removeAll(keepingCapacity: true)
         phaseChanged = nil
         companionLine = nil
+        failed = false
+        respawned = false
     }
 }
 
@@ -24,7 +30,7 @@ enum Pickup: Equatable {
     case mote(Int)
     case gate(Int)
     case springboard(Int)
-    case shrine(Int, healed: Bool)
+    case checkpoint(Int)
 }
 
 struct RunResult: Equatable {
@@ -38,14 +44,20 @@ struct RunResult: Equatable {
     var motes: Int = 0
     var totalMotes: Int = 0
     var gates: Int = 0
+    /// How many times the runner was sent back to a checkpoint.
+    var retries: Int = 0
 }
 
 /// The whole game model for one realm: runner + course + guardian + companion.
 /// The SpriteKit scene only renders this and forwards touches (and a Godot port would do the same).
+/// There are no lives: a failure sends the runner back to the last checkpoint (or restarts the
+/// guardian encounter), so every realm can always be finished.
 final class RunSession {
-    enum Phase: Equatable { case run, guardian, won, lost }
+    enum Phase: Equatable { case run, guardian, won }
 
     static let fixedStep: Double = 1.0 / 120.0
+    /// Pause between a failure and the respawn, so the player sees what happened.
+    static let respawnDelay: Double = 0.9
 
     let realm: Realm
     let tuning: AgeTuning
@@ -58,26 +70,33 @@ final class RunSession {
     private(set) var phase: Phase = .run
     private(set) var collected: Set<Int> = []
     private(set) var motesCollected = 0
-    private(set) var gatesPassed = 0
     private(set) var loreSeen: [String] = []
     private(set) var time: Double = 0
+    private(set) var retries = 0
+    /// Index of the last checkpoint reached (nil = the start line).
+    private(set) var activeCheckpoint: Int?
+    /// Seconds until the pending respawn (nil when the runner is fine).
+    private(set) var respawnTimer: Double?
 
     private var nextFact = 0
     private var accumulator: Double = 0
     private var saidRelicTip = false
     private var takenMotes: Set<Int> = []
     private var usedGates: Set<Int> = []
+    private var countedGates: Set<Int> = []
     private var usedSprings: Set<Int> = []
-    private var usedShrines: Set<Int> = []
+    private var guardianStartX: Double = 0
     /// Motes are sorted, so the scan starts from the first one not yet behind the runner.
     private var moteCursor = 0
 
-    init(realm: Realm, totalRealms: Int, tuning: AgeTuning, mode: GuardianMode, companion: CompanionScript) {
+    /// `variation` picks this run's random layout (pass a random value in the app; tests pass fixed ones).
+    init(realm: Realm, totalRealms: Int, tuning: AgeTuning, mode: GuardianMode, companion: CompanionScript,
+         variation: UInt64 = 0) {
         self.realm = realm
         self.tuning = tuning
         self.mode = mode
         self.companionScript = companion
-        course = Course(realm: realm, totalRealms: totalRealms, tuning: tuning)
+        course = Course(realm: realm, totalRealms: totalRealms, tuning: tuning, variation: variation)
         runner = RunnerSim(course: course,
                            config: RunnerConfig(difficulty: realm.difficulty(totalRealms: totalRealms), tuning: tuning))
         self.companion = CompanionDirector(durationScale: tuning.bubbleDurationScale)
@@ -90,12 +109,16 @@ final class RunSession {
     }
 
     var variant: LoreVariant { tuning.loreVariant }
+    var gatesPassed: Int { countedGates.count }
+
+    /// Where the runner comes back after a failure in the run section.
+    var respawnX: Double { activeCheckpoint.map { course.checkpoints[$0].x } ?? 80 }
 
     /// 0...1 progress for the HUD: the run section, then the guardian encounter.
     var progress: Double {
         switch phase {
         case .run: return min(runner.x / course.runLength, 1)
-        case .guardian, .won, .lost: return guardian?.progress(runnerX: runner.x) ?? 1
+        case .guardian, .won: return guardian?.progress(runnerX: runner.x) ?? 1
         }
     }
 
@@ -119,6 +142,12 @@ final class RunSession {
         guard phase == .run || phase == .guardian else { return }
         time += dt
 
+        if let t = respawnTimer {
+            respawnTimer = t - dt
+            if t - dt <= 0 { respawn(&events) }
+            return
+        }
+
         runner.step(dt, events: &events.runner)
 
         if phase == .run {
@@ -132,7 +161,37 @@ final class RunSession {
             if guardian.finished { setPhase(.won, &events) }
         }
 
-        if !runner.isAlive { setPhase(.lost, &events) }
+        if runner.failed, phase != .won {
+            respawnTimer = RunSession.respawnDelay
+            retries += 1
+            events.failed = true
+            // An encouraging word now and then (not on every stumble).
+            if retries % 3 == 1, !companionScript.loseLines.isEmpty {
+                let pick = companionScript.loseLines[retries % companionScript.loseLines.count]
+                companion.say(CompanionLine(text: pick.text(for: variant), loreID: nil,
+                                            priority: CompanionLine.Priority.tip, expiresAfter: 3))
+            }
+        }
+    }
+
+    private func respawn(_ events: inout SessionEvents) {
+        respawnTimer = nil
+        events.respawned = true
+        switch phase {
+        case .run:
+            let x = respawnX
+            runner.respawn(at: x)
+            // Things ahead of the checkpoint can be used again on the next attempt.
+            usedSprings = usedSprings.filter { course.springboards[$0].x < x }
+            usedGates = usedGates.filter { course.gates[$0].x < x }
+            moteCursor = course.motes.firstIndex { $0.x >= x - 40 } ?? course.motes.count
+        case .guardian:
+            // The encounter itself is the checkpoint: start it over.
+            runner.respawn(at: guardianStartX)
+            guardian = GuardianSim(mode: mode, startX: guardianStartX, tuning: tuning, seed: realm.seed &+ UInt64(retries))
+        case .won:
+            break
+        }
     }
 
     private func checkRelics(_ events: inout SessionEvents) {
@@ -162,7 +221,7 @@ final class RunSession {
 
     private func checkInteractables(_ events: inout SessionEvents) {
         let x = runner.x
-        let riderY = runner.y + 22  // roughly the rider's chest
+        let riderY = runner.y + 22  // roughly the runner's chest
 
         let motes = course.motes
         while moteCursor < motes.count, motes[moteCursor].x < x - 40 { moteCursor += 1 }
@@ -181,7 +240,7 @@ final class RunSession {
         for (i, g) in course.gates.enumerated() where !usedGates.contains(i) && abs(g.x - x) < 24 {
             if abs(riderY - (course.surface(at: g.x) + g.lift)) < 46 {
                 usedGates.insert(i)
-                gatesPassed += 1
+                countedGates.insert(i)
                 runner.addBoost(150)
                 events.pickups.append(.gate(i))
             }
@@ -194,13 +253,11 @@ final class RunSession {
             events.pickups.append(.springboard(i))
         }
 
-        for (i, s) in course.shrines.enumerated() where !usedShrines.contains(i) && abs(s.x - x) < 30 {
-            if runner.heightAboveGround < s.lift + 140 {
-                usedShrines.insert(i)
-                let healed = runner.heal()
-                if !healed { runner.addBoost(120) }
-                events.pickups.append(.shrine(i, healed: healed))
-            }
+        // Checkpoints save progress the moment the runner passes them, at any height.
+        let next = (activeCheckpoint ?? -1) + 1
+        if next < course.checkpoints.count, x >= course.checkpoints[next].x, !runner.failed {
+            activeCheckpoint = next
+            events.pickups.append(.checkpoint(next))
         }
     }
 
@@ -214,6 +271,7 @@ final class RunSession {
     }
 
     private func enterGuardian(_ events: inout SessionEvents) {
+        guardianStartX = runner.x
         guardian = GuardianSim(mode: mode, startX: runner.x, tuning: tuning, seed: realm.seed)
         runner.hazardsEnabled = false
         companion.say(CompanionLine(text: realm.guardian.intro.text(for: variant),
@@ -225,9 +283,8 @@ final class RunSession {
         guard phase != newPhase else { return }
         phase = newPhase
         events.phaseChanged = newPhase
-        let lines = newPhase == .won ? companionScript.winLines : newPhase == .lost ? companionScript.loseLines : []
-        if !lines.isEmpty {
-            let pick = lines[Int(time) % lines.count]
+        if newPhase == .won, !companionScript.winLines.isEmpty {
+            let pick = companionScript.winLines[Int(time) % companionScript.winLines.count]
             companion.say(CompanionLine(text: pick.text(for: variant), loreID: nil,
                                         priority: CompanionLine.Priority.outcome))
         }
@@ -237,6 +294,7 @@ final class RunSession {
         RunResult(realmID: realm.id, won: phase == .won, relics: collected.count,
                   flips: runner.totalFlips, bestCombo: runner.bestCombo,
                   loreSeen: loreSeen, time: time,
-                  motes: motesCollected, totalMotes: course.motes.count, gates: gatesPassed)
+                  motes: motesCollected, totalMotes: course.motes.count, gates: gatesPassed,
+                  retries: retries)
     }
 }

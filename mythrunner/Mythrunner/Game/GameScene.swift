@@ -11,6 +11,8 @@ final class GameScene: SKScene {
         var mode: GuardianMode
         var companion: CompanionScript
         var haptics: Bool
+        /// A fresh random layout for every run (terrain, hazards, scenery).
+        var variation: UInt64 = .random(in: 1...UInt64.max)
     }
 
     var onFinish: ((RunResult) -> Void)?
@@ -39,14 +41,16 @@ final class GameScene: SKScene {
     private var moteNodes: [SKSpriteNode] = []
     private var gateNodes: [SKSpriteNode] = []
     private var springNodes: [SKSpriteNode] = []
-    private var shrineNodes: [SKNode] = []
+    private var checkpointNodes: [SKNode] = []
 
     // Terrain chunks (generated lazily, recycled)
     private let chunkWidth: CGFloat = 600
     private var chunks: [Int: SKSpriteNode] = [:]
 
     // HUD
-    private var hearts: [SKSpriteNode] = []
+    private var checkpointLabel: SKLabelNode!
+    /// Full-screen fade used between a failure and the respawn.
+    private var fade: SKSpriteNode!
     private var progressFill: SKSpriteNode!
     private var progressTrack: SKShapeNode!
     private var relicLabel: SKLabelNode!
@@ -59,7 +63,6 @@ final class GameScene: SKScene {
     private var lowTex: SKTexture!
     private var highTex: SKTexture!
     private var warnTex: SKTexture!
-    private var heartTex: SKTexture!
 
     private var events = SessionEvents()
     private var lastTime: TimeInterval = 0
@@ -70,7 +73,7 @@ final class GameScene: SKScene {
     init(size: CGSize, setup: Setup) {
         self.setup = setup
         session = RunSession(realm: setup.realm, totalRealms: setup.totalRealms, tuning: setup.tuning,
-                             mode: setup.mode, companion: setup.companion)
+                             mode: setup.mode, companion: setup.companion, variation: setup.variation)
         palette = ResolvedPalette(palette: setup.realm.palette, guardianHex: setup.realm.guardian.color,
                                   tuning: setup.tuning)
         super.init(size: size)
@@ -92,7 +95,6 @@ final class GameScene: SKScene {
         lowTex = TextureFactory.projectile(color: palette.guardian.lighter(0.1), high: false)
         highTex = TextureFactory.projectile(color: palette.accent, high: true)
         warnTex = TextureFactory.warningMarker(color: palette.accent)
-        heartTex = TextureFactory.heart(color: RGBA(hex: "#FF4D6D"))
 
         addChild(cam)
         camera = cam
@@ -148,7 +150,7 @@ final class GameScene: SKScene {
 
     private func buildParallax() {
         let s = setup.realm.scenery
-        let seed = setup.realm.seed
+        let seed = setup.realm.seed ^ setup.variation
         let layers: [(SceneryPainter.Depth, RGBA, CGFloat, CGFloat, CGFloat, CGFloat)] = [
             // depth, color, texture height, x factor, y factor, base y (fraction of screen from bottom)
             (.far, palette.far, 300, 0.08, 0.05, 0.10),
@@ -248,12 +250,17 @@ final class GameScene: SKScene {
     }
 
     private func buildHUD() {
-        for _ in 0..<session.runner.config.hearts {
-            let h = SKSpriteNode(texture: heartTex)
-            h.size = CGSize(width: 24, height: 21)
-            hud.addChild(h)
-            hearts.append(h)
-        }
+        checkpointLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        checkpointLabel.fontSize = 16
+        checkpointLabel.fontColor = .white
+        checkpointLabel.horizontalAlignmentMode = .left
+        checkpointLabel.verticalAlignmentMode = .center
+        hud.addChild(checkpointLabel)
+
+        fade = SKSpriteNode(color: .black, size: CGSize(width: 10, height: 10))
+        fade.alpha = 0
+        fade.zPosition = 50
+        hud.addChild(fade)
 
         progressTrack = SKShapeNode(rectOf: CGSize(width: 220, height: 10), cornerRadius: 5)
         progressTrack.fillColor = UIColor(white: 0, alpha: 0.25)
@@ -335,9 +342,8 @@ final class GameScene: SKScene {
             weather.particlePositionRange.dx = max(weather.particlePositionRange.dx, w * 1.4)
         }
 
-        for (i, heart) in hearts.enumerated() {
-            heart.position = CGPoint(x: left + 12 + CGFloat(i) * 28, y: top)
-        }
+        checkpointLabel.position = CGPoint(x: left, y: top)
+        fade.size = CGSize(width: w + 4, height: h + 4)
         relicLabel.position = CGPoint(x: left, y: top - 30)
         progressTrack.position = CGPoint(x: 0, y: top)
         progressFill.position = CGPoint(x: -108, y: top)
@@ -445,24 +451,28 @@ final class GameScene: SKScene {
             springNodes.append(n)
         }
 
-        let shrineTex = TextureFactory.shrine(stone: palette.near.lighter(0.2), flame: RGBA(hex: "#FF4D6D"))
-        let beamTex = TextureFactory.verticalFade(color: RGBA(hex: "#FFB3C1"), topAlpha: 0, bottomAlpha: 0.55)
-        for sh in course.shrines {
+        let litTex = TextureFactory.shrine(stone: palette.near.lighter(0.2), flame: palette.accent.lighter(0.2))
+        let unlitTex = TextureFactory.shrine(stone: palette.near.lighter(0.2), flame: RGBA(r: 0.35, g: 0.35, b: 0.4))
+        let beamTex = TextureFactory.verticalFade(color: palette.accent.lighter(0.4), topAlpha: 0, bottomAlpha: 0.55)
+        for cp in course.checkpoints {
             let node = SKNode()
-            node.position = CGPoint(x: sh.x, y: course.surface(at: sh.x))
+            node.position = CGPoint(x: cp.x, y: course.surface(at: cp.x))
             node.zPosition = 6
             let beam = SKSpriteNode(texture: beamTex)
+            beam.name = "beam"
             beam.anchorPoint = CGPoint(x: 0.5, y: 0)
             beam.size = CGSize(width: 34, height: 220)
             beam.blendMode = .add
-            beam.run(.repeatForever(.sequence([.fadeAlpha(to: 0.55, duration: 0.8), .fadeAlpha(to: 1, duration: 0.8)])))
+            beam.alpha = 0
             node.addChild(beam)
-            let shrine = SKSpriteNode(texture: shrineTex)
+            let shrine = SKSpriteNode(texture: unlitTex)
+            shrine.name = "shrine"
+            shrine.userData = ["lit": litTex]
             shrine.anchorPoint = CGPoint(x: 0.5, y: 0)
             shrine.position = CGPoint(x: 0, y: -4)
             node.addChild(shrine)
             world.addChild(node)
-            shrineNodes.append(node)
+            checkpointNodes.append(node)
         }
     }
 
@@ -483,18 +493,41 @@ final class GameScene: SKScene {
                 let n = springNodes[i]
                 n.run(.sequence([.scaleY(to: 0.6, duration: 0.06), .scaleY(to: 1.15, duration: 0.1), .scaleY(to: 1, duration: 0.12)]))
                 haptics.heavy()
-            case .shrine(let i, let healed):
-                let n = shrineNodes[i]
-                n.children.first?.run(.sequence([.scaleX(to: 3, duration: 0.25), .fadeOut(withDuration: 0.5), .removeFromParent()]))
+            case .checkpoint(let i):
+                let n = checkpointNodes[i]
+                if let shrine = n.childNode(withName: "shrine") as? SKSpriteNode,
+                   let lit = shrine.userData?["lit"] as? SKTexture {
+                    shrine.texture = lit
+                    shrine.run(.sequence([.scale(to: 1.25, duration: 0.12), .scale(to: 1, duration: 0.2)]))
+                }
+                n.childNode(withName: "beam")?.run(.sequence([
+                    .fadeAlpha(to: 1, duration: 0.25),
+                    .repeatForever(.sequence([.fadeAlpha(to: 0.5, duration: 0.8), .fadeAlpha(to: 1, duration: 0.8)])),
+                ]))
                 haptics.success()
                 lumi.ping()
-                popText(healed ? "+1 ♥" : "BLESSING!", at: CGPoint(x: n.position.x, y: player.position.y))
+                popText("CHECKPOINT", at: CGPoint(x: n.position.x, y: player.position.y))
             }
         }
     }
 
     private func handle(_ e: SessionEvents, time: TimeInterval) {
         handlePickups(e.pickups)
+        if e.failed {
+            // Dip to black, then come back at the checkpoint.
+            fade.removeAllActions()
+            fade.run(.sequence([.wait(forDuration: 0.35), .fadeAlpha(to: 0.85, duration: 0.45)]))
+        }
+        if e.respawned {
+            fade.removeAllActions()
+            fade.run(.fadeOut(withDuration: 0.4))
+            // A restarted guardian encounter numbers its attacks from zero again.
+            projectileNodes.values.forEach { $0.removeFromParent() }
+            warningNodes.values.forEach { $0.removeFromParent() }
+            projectileNodes.removeAll()
+            warningNodes.removeAll()
+            cam.position = CGPoint(x: CGFloat(session.runner.x) + size.width * 0.18, y: max(CGFloat(session.runner.y) + 50, size.height / 2))
+        }
         for ev in e.runner {
             switch ev {
             case .jumped: haptics.light()
@@ -555,9 +588,6 @@ final class GameScene: SKScene {
                 showBanner(title: "REALM COMPLETE", subtitle: setup.realm.name, hold: 2.5)
                 haptics.success()
                 finishTimer = 2.6
-            case .lost:
-                showBanner(title: "TRY AGAIN", subtitle: "Every myth has a second chance", hold: 2.5)
-                finishTimer = 2.2
             case .run: break
             }
         }
@@ -670,8 +700,8 @@ final class GameScene: SKScene {
     // MARK: HUD & feedback
 
     private func updateHUD() {
-        let hp = session.runner.hearts
-        for (i, h) in hearts.enumerated() { h.alpha = i < hp ? 1 : 0.2 }
+        let reached = session.activeCheckpoint.map { $0 + 1 } ?? 0
+        checkpointLabel.text = "â \(reached)/\(session.course.checkpoints.count)"
         progressFill.xScale = CGFloat(session.progress)
         progressFill.color = (session.phase == .run ? palette.accent : RGBA(hex: "#FF4D6D")).skColor
         relicLabel.text = "◆ \(session.collected.count)/\(session.course.relics.count)"

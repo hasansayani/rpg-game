@@ -92,7 +92,9 @@ final class GuardianSim {
         case .weakpoint:
             stepWeakPoints(runner: runner, course: course, events: &events)
             spawnTimer -= dt
-            if spawnTimer <= 0 {
+            // Hold fire while a weak point is close, so the player gets a clean shot at it.
+            let clearShot = weakPoint.map { $0.x - runner.x < 900 } ?? false
+            if spawnTimer <= 0, !clearShot {
                 spawnTimer = tuning.gauntletInterval * 1.6 * rng.range(0.8, 1.2)
                 launch(at: runner.x + 950, kind: .low, events: &events)
             }

@@ -86,7 +86,7 @@ final class TuningTests: XCTestCase {
     func testYoungPlayersGetGentlerGame() {
         let kid = AgeTuning.forBand(.sprout), teen = AgeTuning.forBand(.legend)
         XCTAssertLessThan(kid.speedScale, teen.speedScale)
-        XCTAssertGreaterThan(kid.hearts, teen.hearts)
+        XCTAssertLessThan(kid.checkpointSpacing, teen.checkpointSpacing)
         XCTAssertGreaterThan(kid.landingTolerance, teen.landingTolerance)
         XCTAssertEqual(kid.loreVariant, .kid)
         XCTAssertGreaterThan(kid.saturation, teen.saturation)
@@ -136,16 +136,48 @@ final class CourseTests: XCTestCase {
         for band in AgeBand.allCases {
             let tuning = AgeTuning.forBand(band)
             for realm in catalog.realms {
-                let a = Course(realm: realm, totalRealms: 30, tuning: tuning)
-                let b = Course(realm: realm, totalRealms: 30, tuning: tuning)
+              for variation: UInt64 in [0, 1, 7, 4242, 987_654_321] {
+                let a = Course(realm: realm, totalRealms: 30, tuning: tuning, variation: variation)
+                let b = Course(realm: realm, totalRealms: 30, tuning: tuning, variation: variation)
                 XCTAssertEqual(a.springboards, b.springboards)
                 XCTAssertEqual(a.gates, b.gates)
                 XCTAssertEqual(a.motes, b.motes)
-                XCTAssertEqual(a.shrines, b.shrines)
-                XCTAssertFalse(a.springboards.isEmpty, realm.id)
+                XCTAssertEqual(a.checkpoints, b.checkpoints)
+                // A short hop (tap) clears every obstacle, even on a climb.
+                if !realm.isWater {
+                    let cfg = RunnerConfig(difficulty: realm.difficulty(totalRealms: 30), tuning: tuning)
+                    for o in a.obstacles {
+                        for speed in Course.comfortSpeeds(cfg) {
+                            let window = stride(from: o.x - 300, through: o.x - 40, by: 10)
+                                .filter { a.hopClears(from: $0, obstacle: o, speed: speed, config: cfg) }
+                            XCTAssertGreaterThanOrEqual(window.count, Course.comfortWindow,
+                                                        "\(realm.id): no comfortable tap window at \(Int(o.x))")
+                        }
+                    }
+                }
+                // Every hazard leaves room to land and jump again before the next one.
+                let spans = (a.obstacles.map { ($0.x - $0.width / 2, $0.x + $0.width / 2) } + a.gaps.map { ($0.start, $0.end) })
+                    .sorted { $0.0 < $1.0 }
+                for (p, q) in zip(spans, spans.dropFirst()) {
+                    do { XCTAssertGreaterThanOrEqual(q.0 - p.1, a.landingRoom - 0.001, "\(realm.id): hazards too close at \(Int(q.0))") }
+                }
+                XCTAssertEqual(a.springboards.isEmpty, realm.isWater, realm.id)
+                XCTAssertEqual(a.hangers.isEmpty, !realm.isWater, realm.id)
+                if realm.isWater {
+                    XCTAssertTrue(a.gaps.isEmpty, realm.id)
+                    // Every hanger leaves a channel wide enough to swim under.
+                    for h in a.hangers {
+                        XCTAssertGreaterThanOrEqual(a.waterSurface - h.length - a.surface(at: h.x), 120, realm.id)
+                    }
+                }
                 XCTAssertFalse(a.gates.isEmpty, realm.id)
                 XCTAssertGreaterThan(a.motes.count, 20, realm.id)
-                XCTAssertTrue((1...2).contains(a.shrines.count), realm.id)
+                XCTAssertGreaterThanOrEqual(a.checkpoints.count, 3, realm.id)
+                // A respawn point is always on solid, hazard-free ground.
+                for c in a.checkpoints {
+                    XCTAssertNil(a.gap(at: c.x), realm.id)
+                    XCTAssertFalse(a.obstacles.contains { abs($0.x - c.x) < 160 }, realm.id)
+                }
                 for s in a.springboards {
                     let landing = s.x...(s.x + Course.springboardClearance)
                     XCTAssertFalse(a.gaps.contains { landing.overlaps($0.start...$0.end) }, "\(realm.id): gap after springboard")
@@ -153,8 +185,18 @@ final class CourseTests: XCTestCase {
                 }
                 for g in a.gates { XCTAssertNil(a.gap(at: g.x), realm.id) }
                 XCTAssertTrue(a.motes.allSatisfy { $0.lift > 0 }, realm.id)
+              }
             }
         }
+    }
+
+    func testEachRunGetsADifferentLandscape() throws {
+        let realm = try loadCatalog().realms[0]
+        let a = Course(realm: realm, totalRealms: 30, tuning: .forBand(.explorer), variation: 1)
+        let b = Course(realm: realm, totalRealms: 30, tuning: .forBand(.explorer), variation: 2)
+        let samples = stride(from: 1000.0, to: 9000, by: 250)
+        XCTAssertNotEqual(samples.map(a.surface(at:)), samples.map(b.surface(at:)), "terrain should differ per run")
+        XCTAssertNotEqual(a.obstacles, b.obstacles, "hazards should differ per run")
     }
 
     func testStartIsFlat() throws {
@@ -179,51 +221,144 @@ final class SimulationTests: XCTestCase {
         XCTAssertEqual(session.runner.y, session.course.surface(at: session.runner.x), accuracy: 1)
     }
 
-    func testJumpAndFlipGivesBoost() throws {
+    func testTuckedFlipLandsAndGivesBoost() throws {
+        // On the flat start: tuck (hold) to build spin, open up (release) to slow it, land upright.
         let session = try makeSession()
         var events = SessionEvents()
         for _ in 0..<30 { session.advance(1.0 / 60, into: &events) }
         session.press()
         var landed: [Int] = []
-        // Hold until roughly one full rotation, then release and let it land.
-        let flipTime = (Double.pi * 2) / session.runner.config.flipAngularSpeed
+        var crashed = false
+        var jumpedAt: Double?
         var t = 0.0
-        for _ in 0..<240 {
+        let r = session.runner
+        for _ in 0..<480 {
             events.clear()
-            if t >= flipTime { session.release() }
+            // Hold through the crouch (long jump fires on its own) and the tuck; open up near one turn.
+            if !r.grounded && r.airRotation >= Double.pi * 2 - 1.0 { session.release() }
             session.advance(1.0 / 120, into: &events)
             t += 1.0 / 120
+            if events.runner.contains(.jumped) { jumpedAt = t }
             for case .landed(let f) in events.runner { landed.append(f) }
-            if !landed.isEmpty { break }
+            if events.runner.contains(.crashed) { crashed = true }
+            if !landed.isEmpty || crashed { break }
         }
-        XCTAssertFalse(landed.isEmpty, "runner should land")
+        XCTAssertEqual(jumpedAt ?? 0, r.config.fullChargeTime, accuracy: 0.03, "a long press jumps at full crouch")
+        XCTAssertFalse(crashed, "a well-timed tuck and open should land")
+        XCTAssertEqual(landed, [1], "one full flip")
+        XCTAssertGreaterThan(session.runner.boost, 50, "a clean flip gives a speed boost")
     }
 
-    func testSpringboardLaunchesAndShrineHeals() throws {
+    func testTapIsAShortHopAndLongPressJumpsHigher() throws {
+        func peak(holdFrames: Int) throws -> Double {
+            let session = try makeSession()
+            var events = SessionEvents()
+            for _ in 0..<30 { session.advance(1.0 / 60, into: &events) }
+            session.press()
+            var best = 0.0
+            for frame in 0..<240 {
+                if frame == holdFrames { session.release() }
+                session.advance(1.0 / 120, into: &events)
+                best = max(best, session.runner.heightAboveGround)
+            }
+            return best
+        }
+        let tap = try peak(holdFrames: 0)
+        let long = try peak(holdFrames: 30)
+        XCTAssertLessThan(tap, 100, "tap = short hop")
+        XCTAssertGreaterThan(long, tap * 1.8, "long press = big jump")
+    }
+
+    func testJumpFollowsAParabolaAndKeepsHorizontalMomentum() throws {
+        let session = try makeSession()
+        var events = SessionEvents()
+        for _ in 0..<30 { session.advance(1.0 / 60, into: &events) }
+        session.press()
+        session.release()
+        let r = session.runner
+        var vys: [Double] = []
+        var speeds: [Double] = []
+        for _ in 0..<60 {
+            events.clear()
+            session.advance(1.0 / 120, into: &events)
+            if !r.grounded { vys.append(r.vy); speeds.append(r.effectiveSpeed) }
+        }
+        XCTAssertGreaterThan(vys.count, 20)
+        // Constant downward acceleration (gravity) on the center of mass…
+        let g = r.config.gravity
+        for (a, b) in zip(vys, vys.dropFirst()) { XCTAssertEqual(a - b, g / 120, accuracy: 0.01) }
+        // …and no change in horizontal speed while airborne (inertia).
+        XCTAssertEqual(speeds.max()! - speeds.min()!, 0, accuracy: 0.001)
+    }
+
+    func testSwimmerStaysBetweenSeabedAndSurface() throws {
+        let catalog = try loadCatalog()
+        let index = try XCTUnwrap(catalog.realms.firstIndex { $0.isWater })
+        let session = try makeSession(index)
+        XCTAssertTrue(session.runner.swimming)
+        var events = SessionEvents()
+        var strokes = 0
+        let r = session.runner
+        for frame in 0..<(60 * 6) {
+            events.clear()
+            // Hold for 2 s (rise to the surface), then let go (sink to the seabed).
+            if frame < 120 { session.release(); session.press() } else { session.release() }
+            session.advance(1.0 / 60, into: &events)
+            strokes += events.runner.filter { $0 == .stroke }.count
+            XCTAssertGreaterThanOrEqual(r.y, session.course.surface(at: r.x) - 0.01)
+            XCTAssertLessThanOrEqual(r.y + RunnerConfig.swimBodyHeight, session.course.waterSurface + 0.01)
+            if frame == 119 { XCTAssertEqual(r.y + RunnerConfig.swimBodyHeight, session.course.waterSurface, accuracy: 1) }
+        }
+        XCTAssertEqual(r.heightAboveGround, 0, accuracy: 1, "released swimmers sink to the seabed")
+        XCTAssertGreaterThan(strokes, 3)
+    }
+
+    func testSpringboardLaunches() throws {
         let session = try makeSession()
         let spring = try XCTUnwrap(session.course.springboards.first)
-        let shrine = try XCTUnwrap(session.course.shrines.first)
         var events = SessionEvents()
         var launched = false, peak = 0.0
-        var shrineEvent: Pickup?
         for _ in 0..<(60 * 120) {
             events.clear()
             session.advance(1.0 / 60, into: &events)
             if events.runner.contains(.launched) { launched = true }
             if launched, abs(session.runner.x - spring.x) < 400 { peak = max(peak, session.runner.heightAboveGround) }
-            for p in events.pickups { if case .shrine = p { shrineEvent = p } }
-            // Jump hazards like the test bot, so the run survives to the shrine.
             let x = session.runner.x
             let danger = session.course.obstacles.contains { $0.x - x > 0 && $0.x - x < 110 }
                 || session.course.gaps.contains { $0.start - x > 0 && $0.start - x < 80 }
             session.release()
-            if danger && session.runner.grounded { session.press() }
-            if session.runner.x > shrine.x + 100 || session.phase != .run { break }
+            if danger && session.runner.grounded { session.press(); session.release() }
+            if session.runner.x > spring.x + 900 || session.phase != .run { break }
         }
-        XCTAssertTrue(launched, "riding over a springboard should launch")
+        XCTAssertTrue(launched, "running over a springboard should launch")
         XCTAssertGreaterThan(peak, 180, "a launch should go well above a normal jump")
-        XCTAssertNotNil(shrineEvent, "riding through the shrine should trigger it")
         XCTAssertGreaterThan(session.result.motes, 0)
+    }
+
+    func testFailingRespawnsAtTheLastCheckpoint() throws {
+        // A runner that never jumps keeps failing; each time it must come back at the checkpoint it reached.
+        let session = try makeSession()
+        let first = try XCTUnwrap(session.course.checkpoints.first)
+        var events = SessionEvents()
+        var reached = false, failures = 0, respawnedAt: [Double] = []
+        for _ in 0..<(60 * 120) {
+            events.clear()
+            session.advance(1.0 / 60, into: &events)
+            if events.pickups.contains(.checkpoint(0)) { reached = true }
+            if events.failed { failures += 1 }
+            if events.respawned { respawnedAt.append(session.runner.x) }
+            if respawnedAt.count >= 3 { break }
+        }
+        XCTAssertGreaterThan(failures, 0)
+        XCTAssertEqual(session.retries, failures)
+        XCTAssertEqual(session.phase, .run, "no lives: the run never ends in a loss")
+        for x in respawnedAt {
+            // Positions are sampled after the frame, so the runner may have moved a few units on.
+            XCTAssertTrue(abs(x - 80) < 20 || session.course.checkpoints.contains { abs($0.x - x) < 20 },
+                          "respawned at \(x), not a checkpoint")
+        }
+        if reached { XCTAssertGreaterThanOrEqual(respawnedAt.last ?? 0, first.x) }
+        XCTAssertFalse(session.runner.failed, "respawned runners are back on their feet")
     }
 
     func testCompanionSpeaksFactsAndRecordsLore() throws {
@@ -240,7 +375,7 @@ final class SimulationTests: XCTestCase {
             let danger = session.course.obstacles.contains { $0.x - x > 0 && $0.x - x < 90 }
                 || session.course.gaps.contains { $0.start - x > 0 && $0.start - x < 70 }
             session.release()
-            if danger && session.runner.grounded { session.press() }
+            if danger && session.runner.grounded { session.press(); session.release() }
             if session.phase != .run { break }
         }
         XCTAssertTrue(lines.contains { $0.loreID == "greek.fact.0" }, lines.map(\.text).joined(separator: "\n"))
@@ -252,7 +387,7 @@ final class SimulationTests: XCTestCase {
         for mode in GuardianMode.allCases {
             let session = try makeSession(0, band: .sprout, mode: mode)
             var events = SessionEvents()
-            for _ in 0..<(60 * 240) {
+            for _ in 0..<(60 * 600) {
                 events.clear()
                 session.advance(1.0 / 60, into: &events)
                 let r = session.runner
@@ -265,15 +400,15 @@ final class SimulationTests: XCTestCase {
                     if let wp = g.weakPoint, wp.x - r.x > 0, wp.x - r.x < 230 { jump = true }
                 }
                 session.release()
-                if jump && r.grounded { session.press() }
-                if session.phase == .won || session.phase == .lost { break }
+                if jump && r.grounded { session.press(); session.release() }
+                if session.phase == .won { break }
             }
-            XCTAssertEqual(session.phase, .won, "mode \(mode) not winnable; hearts \(session.runner.hearts)")
+            XCTAssertEqual(session.phase, .won, "mode \(mode) not finished; retries \(session.retries)")
         }
     }
 
-    /// Level-design KPI: every realm, age band and guardian mode is beatable by a simple bot
-    /// that only taps (never flips). Prints the hardest combos so designers can tune.
+    /// Level-design KPI: every realm, age band and guardian mode is finished by a simple bot
+    /// that never flips, within a bounded number of checkpoint retries. Prints the hardest combos.
     func testAllRealmsBandsAndModesAreBeatable() throws {
         let catalog = try loadCatalog()
         var failures: [String] = []
@@ -286,41 +421,138 @@ final class SimulationTests: XCTestCase {
                     let outcome = Self.playBot(session)
                     let tag = "\(realm.id)/\(band)/\(mode)"
                     if outcome != .won { failures.append(tag) }
-                    tightest.append((tag, session.runner.hearts))
+                    tightest.append((tag, session.retries))
                 }
             }
         }
-        let close = tightest.filter { $0.1 <= 1 }.map(\.0)
-        print("Combos finished with <=1 heart: \(close.count)/\(tightest.count): \(close.prefix(20))")
-        XCTAssertTrue(failures.isEmpty, "Unbeatable for bot: \(failures)")
+        let hardest = tightest.sorted { $0.1 > $1.1 }.prefix(10).map { "\($0.0)=\($0.1)" }
+        let total = tightest.reduce(0) { $0 + $1.1 }
+        print("Bot retries: total \(total), mean \(String(format: "%.2f", Double(total) / Double(tightest.count))); hardest: \(hardest)")
+        XCTAssertTrue(failures.isEmpty, "Not finished by bot: \(failures)")
+        // Difficulty KPI: a simple tapping bot should rarely need more than a handful of retries.
+        XCTAssertLessThanOrEqual(tightest.map(\.1).max() ?? 0, 20, "some realm is too punishing: \(hardest)")
+    }
+
+    /// Random layouts must be just as fair: every realm and band, three random variations each.
+    func testRandomLayoutsAreBeatable() throws {
+        let catalog = try loadCatalog()
+        var failures: [String] = []
+        var worst: [(String, Int)] = []
+        for realm in catalog.realms {
+            for band in AgeBand.allCases {
+                for variation: UInt64 in [11, 2_024, 31_337] {
+                    let session = RunSession(realm: realm, totalRealms: 30, tuning: .forBand(band),
+                                             mode: .chase, companion: catalog.companion, variation: variation)
+                    let tag = "\(realm.id)/\(band)/v\(variation)"
+                    if Self.playBot(session) != .won { failures.append(tag) }
+                    worst.append((tag, session.retries))
+                }
+            }
+        }
+        let hardest = worst.sorted { $0.1 > $1.1 }.prefix(8).map { "\($0.0)=\($0.1)" }
+        print("Random-layout bot retries: mean \(String(format: "%.2f", Double(worst.reduce(0) { $0 + $1.1 }) / Double(worst.count))); hardest: \(hardest)")
+        XCTAssertTrue(failures.isEmpty, "Not finished by bot: \(failures)")
+        XCTAssertLessThanOrEqual(worst.map(\.1).max() ?? 0, 20, "a random layout is too punishing: \(hardest)")
     }
 
     /// A "decent human" bot: looks ~0.3 s ahead and taps (relying on the game's input buffer).
-    static func playBot(_ session: RunSession) -> RunSession.Phase {
+    static func playBot(_ session: RunSession, log: ((SessionEvents) -> Void)? = nil) -> RunSession.Phase {
         var events = SessionEvents()
         var tapCooldown = 0.0
-        for _ in 0..<(60 * 300) {
+        for _ in 0..<(60 * 900) {
             events.clear()
             session.advance(1.0 / 60, into: &events)
+            log?(events)
             tapCooldown -= 1.0 / 60
             let r = session.runner
+            if session.course.isWater {
+                // Hold to rise (one kick per hold), let go to sink.
+                if swimShouldRise(session) { if !r.holding { session.press() } } else { session.release() }
+                if session.phase == .won { break }
+                continue
+            }
             let reach = max(r.effectiveSpeed, 150)
             var jump = false
+            var bigJump = false
             if session.phase == .run {
-                jump = session.course.obstacles.contains { $0.x - r.x > 0 && $0.x - r.x < reach * 0.3 }
-                    || session.course.gaps.contains { $0.start - r.x > 0 && $0.start - r.x < reach * 0.2 }
+                // Judge the hop like a player: jump once a short hop from here would clear the next rock
+                // or chasm (and waiting longer wouldn't); if no tap can make it, long-press instead.
+                let c = session.course, v = r.effectiveSpeed, here = r.x + v / 60
+                let rock = c.obstacles.first { $0.x - r.x > 0 && $0.x - r.x < 260 }
+                let chasm = c.gaps.first { $0.start - r.x > 0 && $0.start - r.x < 260 }
+                if r.grounded, let o = rock {
+                    let now = c.hopClears(from: here, obstacle: o, speed: v, config: r.config)
+                    jump = now && !c.hopClears(from: here + 40, obstacle: o, speed: v, config: r.config)
+                    // No tap window left ahead: long-press, early enough for the crouch to finish.
+                    let windowAhead = stride(from: here + 10, through: o.x - 40, by: 10)
+                        .contains { c.hopClears(from: $0, obstacle: o, speed: v, config: r.config) }
+                    if !now, !windowAhead, o.x - r.x < v * 0.24 + 90 { bigJump = true }
+                }
+                if r.grounded, let gap = chasm {
+                    // Jump from the stretch just before the edge, with a safety margin on the landing.
+                    let near = gap.start - r.x < v * 0.35 + 20
+                    let now = c.hopLanding(from: here, speed: v, config: r.config) > gap.end + 25
+                    let later = here + 40 < gap.start && c.hopLanding(from: here + 40, speed: v, config: r.config) > gap.end + 25
+                    if near && now && !later { jump = true }
+                    if !now, gap.start - r.x < 60 { bigJump = true }
+                }
             } else if let g = session.guardian {
-                jump = g.projectiles.contains { $0.kind == .low && $0.warning <= 0 && $0.x - r.x > 0 && $0.x - r.x < 120 }
-                if let wp = g.weakPoint, wp.x - r.x > 0, wp.x - r.x < 230 { jump = true }
+                // Hop low attacks, but only when a press can actually turn into a jump (on or about to touch the ground).
+                let canJump = r.grounded || (r.vy < 0 && r.heightAboveGround < 25)
+                jump = canJump && g.projectiles.contains { $0.kind == .low && $0.warning <= 0 && $0.x - r.x > 0 && $0.x - r.x < 130 }
+                if jump && !r.grounded { tapCooldown = 0 }
+                // Weak points: a tap reaches low ones, a long press (released once airborne, no flip) the high ones.
+                // Time the jump so its peak arrives over the target.
+                if let wp = g.weakPoint, r.grounded {
+                    let dx = wp.x - r.x
+                    let low = wp.lift - 24 < 100
+                    let lead = r.effectiveSpeed * (low ? 0.33 : 0.62)
+                    if dx > 0, dx < lead {
+                        if low { jump = true; tapCooldown = 0 } else { bigJump = true }
+                    }
+                }
             }
-            session.release()
-            if jump && tapCooldown <= 0 {
-                session.press()
-                tapCooldown = 0.35
+            if bigJump && r.grounded {
+                if !r.holding { session.press() }
+            } else {
+                session.release()
+                if jump && tapCooldown <= 0 {
+                    session.press()
+                    tapCooldown = 0.35
+                }
             }
-            if session.phase == .won || session.phase == .lost { break }
+            if session.phase == .won { break }
         }
         return session.phase
+    }
+
+    /// The swimming bot picks a depth lane: over coral, under hangers, around attacks, into weak points.
+    static func swimShouldRise(_ s: RunSession) -> Bool {
+        let r = s.runner, c = s.course
+        let floor = c.surface(at: r.x)
+        let look = max(r.effectiveSpeed, 150) * 0.9
+        // Everything in absolute world y: the seabed under a hazard isn't the seabed under the swimmer.
+        var target = floor + 80
+        if s.phase == .run {
+            // Stay in the band between coral below and hangers above: cruise low, kick only to clear coral,
+            // and never kick when that would carry us into a hanger.
+            var low = floor + 40, high = c.waterSurface - RunnerConfig.swimBodyHeight
+            for o in c.obstacles where o.x - r.x > -40 && o.x - r.x < look {
+                low = max(low, c.surface(at: o.x) + o.height + 20)
+            }
+            for h in c.hangers where h.x - r.x > -40 && h.x - r.x < look {
+                high = min(high, c.waterSurface - h.length - RunnerConfig.swimBodyHeight - 20)
+            }
+            if r.y > high - 60 { return false }
+            return r.holding ? r.y < low + 15 : r.y < low
+        } else if let g = s.guardian {
+            let ahead = max(r.effectiveSpeed, 150) * 1.1
+            if g.projectiles.contains(where: { $0.kind == .high && $0.x - r.x > -30 && $0.x - r.x < ahead }) { target = floor + 8 }
+            if g.projectiles.contains(where: { $0.kind == .low && $0.x - r.x > -30 && $0.x - r.x < ahead }) { target = floor + 60 }
+            if let wp = g.weakPoint, wp.x - r.x > 0, wp.x - r.x < 400 { target = c.surface(at: wp.x) + wp.lift - 24 }
+        }
+        // Hysteresis: start a kick only when well below the lane, then keep holding up to it.
+        return r.holding ? r.y < target : r.y < target - 30
     }
 
     func testProgressUnlocksSequentially() throws {

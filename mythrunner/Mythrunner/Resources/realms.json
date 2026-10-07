@@ -22,7 +22,7 @@
     {
       "id": "greek", "order": 1, "name": "Olympus Heights",
       "culture": "Ancient Greek", "region": "europe", "place": "Greece",
-      "era": "c. 800 BCE – 400 CE", "tags": ["famous", "ancient"], "living": false,
+      "era": "c. 800 BCE – 400 CE", "tags": ["famous", "ancient"], "living": false, "motif": "meander",
       "palette": { "skyTop": "#3A7BD5", "skyBottom": "#FFD6A5", "far": "#8FB3D9", "mid": "#5C8DB8", "near": "#2F5D7C", "ground": "#F2E8CF", "groundEdge": "#C9B48A", "accent": "#FFC857" },
       "scenery": { "far": "peaks", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 60, "frequency": 1.0 },
       "facts": [
@@ -32,12 +32,13 @@
       ],
       "relic": { "name": "Owl Tetradrachm", "text": "Athens' silver 'owl' coin was so trusted that traders across the Mediterranean accepted it.", "kid": "This silver owl coin was so trusted, people used it in many lands!" },
       "guardian": { "name": "Talos", "kind": "creature", "shape": "giant", "color": "#C8873A", "suggestedMode": "chase",
+        "design": {"headgear": "helmet", "tail": "none", "aura": "sparks", "signature": "ichorVein"},
         "intro": { "text": "Talos! The bronze giant who circled Crete three times a day — some call him an ancient idea of a robot. Run!", "kid": "It's Talos, a giant made of bronze — like an ancient robot! Run, run!" } }
     },
     {
       "id": "egyptian", "order": 2, "name": "Sands of the Two Lands",
       "culture": "Ancient Egyptian", "region": "africa", "place": "Egypt",
-      "era": "c. 3100 – 30 BCE", "tags": ["famous", "ancient"], "living": false,
+      "era": "c. 3100 – 30 BCE", "tags": ["famous", "ancient"], "living": false, "motif": "lotus",
       "palette": { "skyTop": "#2E4E9E", "skyBottom": "#FFB563", "far": "#E9A15B", "mid": "#C97B3C", "near": "#8C4F2B", "ground": "#F6D7A7", "groundEdge": "#D9A86C", "accent": "#2EC4B6" },
       "scenery": { "far": "dunes", "landmarks": ["pyramid", "palm", "obelisk"], "weather": "sand", "amplitude": 45, "frequency": 0.8 },
       "facts": [
@@ -47,12 +48,13 @@
       ],
       "relic": { "name": "Scarab Amulet", "text": "Scarab beetles roll balls of dung, so Egyptians imagined the god Khepri rolling the sun across the sky.", "kid": "Scarab beetles roll balls of dung — Egyptians imagined a beetle god rolling the sun!" },
       "guardian": { "name": "Apep", "kind": "creature", "shape": "serpent", "color": "#5B2A86", "suggestedMode": "chase",
+        "design": {"eyes": "slits", "headgear": "crest", "aura": "dust", "signature": "sunSwallower"},
         "intro": { "text": "Apep, serpent of chaos! Each night it attacked Ra's sun-boat — and each dawn, it lost. Let's make sure it loses again!", "kid": "Apep, the giant chaos snake, tries to stop the sun every night. Zoom past it!" } }
     },
     {
       "id": "norse", "order": 3, "name": "Nine Worlds Ridge",
       "culture": "Norse", "region": "europe", "place": "Scandinavia & Iceland",
-      "era": "Viking Age, c. 790 – 1100 CE", "tags": ["famous", "medieval"], "living": false,
+      "era": "Viking Age, c. 790 – 1100 CE", "tags": ["famous", "medieval"], "living": false, "motif": "knotwork",
       "palette": { "skyTop": "#0B1D3A", "skyBottom": "#3E7CB1", "far": "#5B7DA8", "mid": "#36507A", "near": "#1E2F4D", "ground": "#EEF4FA", "groundEdge": "#A9C4DE", "accent": "#7CFFCB" },
       "scenery": { "far": "peaks", "landmarks": ["longhouse", "pine", "standingStones"], "weather": "aurora", "amplitude": 90, "frequency": 1.2 },
       "facts": [
@@ -62,12 +64,13 @@
       ],
       "relic": { "name": "Rune Stone", "text": "Runes were the Norse alphabet. The Viking Age 'Younger Futhark' used just 16 letters.", "kid": "Vikings wrote with runes — straight-line letters that are easy to carve in wood and stone!" },
       "guardian": { "name": "Fenrir", "kind": "creature", "shape": "beast", "color": "#4A4E69", "suggestedMode": "chase",
+        "design": {"headgear": "mane", "tail": "plume", "aura": "frost", "signature": "gleipnir"},
         "intro": { "text": "Fenrir! The gods bound this giant wolf with a ribbon made of impossible things — like the sound of a cat's footsteps. It's loose!", "kid": "Fenrir the giant wolf got loose! Quick, outrun him!" } }
     },
     {
       "id": "japanese", "order": 4, "name": "Torii of the Rising Sun",
       "culture": "Japanese (Shinto)", "region": "asia", "place": "Japan",
-      "era": "Kojiki compiled 712 CE", "tags": ["famous"], "living": true,
+      "era": "Kojiki compiled 712 CE", "tags": ["famous"], "living": true, "motif": "seigaiha",
       "palette": { "skyTop": "#FF9AA2", "skyBottom": "#FFE5D9", "far": "#B5A1C9", "mid": "#8D7AAE", "near": "#5E4B8B", "ground": "#FFF5F7", "groundEdge": "#F4B6C2", "accent": "#E63946" },
       "scenery": { "far": "volcano", "landmarks": ["torii", "pagoda", "pine"], "weather": "petals", "amplitude": 55, "frequency": 1.0 },
       "facts": [
@@ -77,12 +80,13 @@
       ],
       "relic": { "name": "Kusanagi Sword", "text": "Legend says the storm god Susanoo found the sword Kusanagi inside a tail of the serpent Orochi.", "kid": "A magic sword was found inside the tail of a giant snake — and became a royal treasure!" },
       "guardian": { "name": "Yamata no Orochi", "kind": "creature", "shape": "serpent", "color": "#3D405B", "suggestedMode": "weakpoint",
+        "design": {"heads": 8, "horns": "spikes", "aura": "petals", "signature": "mossBacks"},
         "intro": { "text": "Yamata no Orochi — eight heads, eight tails! Susanoo beat it by tricking it into drinking strong sake.", "kid": "An eight-headed dragon! Long ago a hero tricked it into a big sleepy nap. Let's be clever too!" } }
     },
     {
       "id": "aztec", "order": 5, "name": "Feathered Serpent Causeway",
       "culture": "Aztec (Mexica)", "region": "americas", "place": "Mexico",
-      "era": "c. 1325 – 1521 CE", "tags": ["famous", "ancient"], "living": false,
+      "era": "c. 1325 – 1521 CE", "tags": ["famous", "ancient"], "living": false, "motif": "stepFret",
       "palette": { "skyTop": "#0081A7", "skyBottom": "#FDFCDC", "far": "#7FB069", "mid": "#2A9D8F", "near": "#1B5E57", "ground": "#F7E1B5", "groundEdge": "#E07A5F", "accent": "#F4A261" },
       "scenery": { "far": "volcano", "landmarks": ["stepPyramid", "cactus", "palm"], "weather": "none", "amplitude": 50, "frequency": 0.9 },
       "facts": [
@@ -92,12 +96,13 @@
       ],
       "relic": { "name": "Sun Stone", "text": "The 24-ton Aztec Sun Stone was rediscovered in 1790 during repairs to Mexico City's main square.", "kid": "A giant carved stone as heavy as four elephants was found under Mexico City!" },
       "guardian": { "name": "Cipactli", "kind": "creature", "shape": "beast", "color": "#2D6A4F", "suggestedMode": "chase",
+        "design": {"eyes": "many", "horns": "spikes", "tail": "fish", "aura": "water", "signature": "jointMouths"},
         "intro": { "text": "Cipactli, the giant earth crocodile! In Aztec myth, the gods shaped the world from its body.", "kid": "A huge crocodile monster! Aztec stories say the land was made from its body. Hop to it!" } }
     },
     {
       "id": "celtic", "order": 6, "name": "Hills of Samhain",
       "culture": "Celtic (Irish)", "region": "europe", "place": "Ireland",
-      "era": "Myths written down c. 700 – 1200 CE", "tags": ["famous", "medieval"], "living": false,
+      "era": "Myths written down c. 700 – 1200 CE", "tags": ["famous", "medieval"], "living": false, "motif": "triskele",
       "palette": { "skyTop": "#355070", "skyBottom": "#B5E48C", "far": "#6D9F71", "mid": "#3E7C59", "near": "#1F4E3D", "ground": "#D9ED92", "groundEdge": "#76C893", "accent": "#F9C74F" },
       "scenery": { "far": "rolling", "landmarks": ["standingStones", "hut", "pine"], "weather": "rain", "amplitude": 70, "frequency": 1.3 },
       "facts": [
@@ -107,12 +112,13 @@
       ],
       "relic": { "name": "Spear of Lugh", "text": "Lugh, master of every craft, gave his name to Lughnasadh, a harvest festival still marked in Ireland.", "kid": "Lugh was good at every job! An Irish summer festival is still named after him." },
       "guardian": { "name": "Balor of the Evil Eye", "kind": "creature", "shape": "giant", "color": "#6A040F", "suggestedMode": "gauntlet",
+        "design": {"eyes": "single", "headgear": "crown", "tail": "none", "aura": "lightning", "signature": "evilEye"},
         "intro": { "text": "Balor of the Evil Eye — one look from his giant eye could destroy armies. Keep moving and don't look back!", "kid": "Balor has one giant grumpy eye. Don't let him spot you — go go go!" } }
     },
     {
       "id": "hindu", "order": 7, "name": "Riverlands of the Vedas",
       "culture": "Hindu", "region": "asia", "place": "India & Nepal",
-      "era": "Rigveda c. 1500 – 1200 BCE", "tags": ["famous"], "living": true,
+      "era": "Rigveda c. 1500 – 1200 BCE", "tags": ["famous"], "living": true, "motif": "paisley",
       "palette": { "skyTop": "#7209B7", "skyBottom": "#FFB703", "far": "#E76F51", "mid": "#B5179E", "near": "#560BAD", "ground": "#FFE8D6", "groundEdge": "#FFB4A2", "accent": "#FFD60A" },
       "scenery": { "far": "peaks", "landmarks": ["shikhara", "palm"], "weather": "fireflies", "amplitude": 65, "frequency": 1.0 },
       "facts": [
@@ -122,13 +128,14 @@
       ],
       "relic": { "name": "Conch Shell", "text": "The shankha, a conch-shell trumpet, is blown in Hindu temples. Vishnu is often shown holding one.", "kid": "This shell is a trumpet! It's blown in temples, and the god Vishnu holds one too." },
       "guardian": { "name": "Vritra", "kind": "creature", "shape": "serpent", "color": "#264653", "suggestedMode": "chase",
+        "design": {"eyes": "slits", "horns": "single", "headgear": "hood", "aura": "smoke", "signature": "hoardedWaters"},
         "intro": { "text": "Vritra, the drought serpent of the Rigveda, coiled around the rivers to stop them flowing. Set the waters free!", "kid": "A giant snake is blocking the rivers! Let's race past it and set the water free!" } },
       "review": "Living religion: have a Hindu cultural consultant review tone and imagery."
     },
     {
       "id": "sumerian", "order": 8, "name": "Gates of Uruk",
       "culture": "Sumerian & Babylonian", "region": "middleEast", "place": "Iraq (Mesopotamia)",
-      "era": "c. 3500 – 539 BCE", "tags": ["ancient"], "living": false,
+      "era": "c. 3500 – 539 BCE", "tags": ["ancient"], "living": false, "motif": "rosette",
       "palette": { "skyTop": "#3C096C", "skyBottom": "#FF9E00", "far": "#E85D04", "mid": "#9D0208", "near": "#370617", "ground": "#FFE5B4", "groundEdge": "#E9C46A", "accent": "#4CC9F0" },
       "scenery": { "far": "dunes", "landmarks": ["ziggurat", "palm"], "weather": "sand", "amplitude": 35, "frequency": 0.7 },
       "facts": [
@@ -138,12 +145,13 @@
       ],
       "relic": { "name": "Clay Tablet", "text": "Hundreds of thousands of cuneiform tablets survive — from epic poems to letters, laws and shopping receipts.", "kid": "Thousands of clay tablets survive — stories, letters, even shopping lists!" },
       "guardian": { "name": "Humbaba", "kind": "creature", "shape": "giant", "color": "#2B9348", "suggestedMode": "weakpoint",
+        "design": {"eyes": "hollow", "tail": "none", "aura": "leaves", "signature": "coiledFace"},
         "intro": { "text": "Humbaba, guardian of the Cedar Forest — his roar is a flood, his breath is fire. Gilgamesh faced him; now it's your turn!", "kid": "Humbaba guards the cedar forest and roars like a flood! Let's be brave like Gilgamesh!" } }
     },
     {
       "id": "yoruba", "order": 9, "name": "Crown of Ilé-Ifẹ̀",
       "culture": "Yoruba", "region": "africa", "place": "Nigeria & Benin",
-      "era": "Ilé-Ifẹ̀ flourished c. 1000 – 1400 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Ilé-Ifẹ̀ flourished c. 1000 – 1400 CE", "tags": ["lesserKnown"], "living": true, "motif": "adire",
       "palette": { "skyTop": "#00B4D8", "skyBottom": "#FFF3B0", "far": "#90BE6D", "mid": "#43AA8B", "near": "#277DA1", "ground": "#F9DC5C", "groundEdge": "#F3722C", "accent": "#F94144" },
       "scenery": { "far": "rolling", "landmarks": ["palm", "hut", "baobab"], "weather": "leaves", "amplitude": 55, "frequency": 1.1 },
       "facts": [
@@ -153,13 +161,14 @@
       ],
       "relic": { "name": "Ifá Tray", "text": "Ifá, the Yoruba system of divination and wisdom verses, is recognized by UNESCO as Intangible Cultural Heritage.", "kid": "Ifá is a Yoruba treasure of wise sayings — protected as world heritage!" },
       "guardian": { "name": "Olókun's Flood", "kind": "force", "shape": "wave", "color": "#0077B6", "suggestedMode": "chase",
+        "design": {"tail": "none", "aura": "water", "signature": "cowrieCrest"},
         "intro": { "text": "In one telling, Olókun, ruler of the deep, sent a great flood over the land. Outrun the rising tide!", "kid": "The sea is rising up in a giant wave! Run for high ground!" } },
       "review": "Living tradition: Òrìṣà must never be framed as enemies. Have a Yoruba practitioner review."
     },
     {
       "id": "maori", "order": 10, "name": "Fish of Māui",
       "culture": "Māori", "region": "oceania", "place": "Aotearoa New Zealand",
-      "era": "Settled c. 1250 – 1300 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Settled c. 1250 – 1300 CE", "tags": ["lesserKnown"], "living": true, "motif": "koru",
       "palette": { "skyTop": "#1D3557", "skyBottom": "#A8DADC", "far": "#457B9D", "mid": "#2A6F4E", "near": "#1B4332", "ground": "#E9F5DB", "groundEdge": "#95D5B2", "accent": "#2EC4B6" },
       "scenery": { "far": "peaks", "landmarks": ["fern", "pine"], "weather": "mist", "amplitude": 85, "frequency": 1.3 },
       "facts": [
@@ -169,13 +178,14 @@
       ],
       "relic": { "name": "Pounamu", "text": "Pounamu, New Zealand greenstone, is treasured as taonga and passed down through generations.", "kid": "This greenstone is a family treasure, handed down from grandparents to grandkids!" },
       "guardian": { "name": "Taniwha of the River", "kind": "trial", "shape": "serpent", "color": "#1B998B", "suggestedMode": "weakpoint",
+        "design": {"eyes": "mirror", "horns": "spikes", "tail": "spiked", "aura": "water", "signature": "pauaEyes"},
         "intro": { "text": "A taniwha! These powerful beings guard rivers and caves. This one is testing you — show it your speed!", "kid": "A river guardian called a taniwha wants to see how fast you are. Show it!" } },
       "review": "Living culture: taniwha are often protectors. Keep framing as a test, and consult Māori advisors."
     },
     {
       "id": "chinese", "order": 11, "name": "Jade Mountain Path",
       "culture": "Chinese", "region": "asia", "place": "China",
-      "era": "Myths recorded from c. 400 BCE", "tags": ["famous"], "living": true,
+      "era": "Myths recorded from c. 400 BCE", "tags": ["famous"], "living": true, "motif": "cloud",
       "palette": { "skyTop": "#0F4C5C", "skyBottom": "#FFCB77", "far": "#8AB17D", "mid": "#2A9D8F", "near": "#264653", "ground": "#F1FAEE", "groundEdge": "#E9C46A", "accent": "#E63946" },
       "scenery": { "far": "karst", "landmarks": ["pagoda", "pine"], "weather": "lanterns", "amplitude": 75, "frequency": 1.2 },
       "facts": [
@@ -185,12 +195,13 @@
       ],
       "relic": { "name": "Red Envelope", "text": "Red envelopes of money are given at Lunar New Year — red was said to scare away the beast Nian.", "kid": "At Lunar New Year, kids get red envelopes. Red scares away the monster Nian!" },
       "guardian": { "name": "Nian", "kind": "creature", "shape": "beast", "color": "#9D0208", "suggestedMode": "chase",
+        "design": {"horns": "single", "headgear": "mane", "tail": "plume", "aura": "sparks", "signature": "firecrackers"},
         "intro": { "text": "Nian! This beast raided villages each new year until people learned it feared red, firecrackers and loud noise.", "kid": "Nian is a beast that's scared of the color red and loud bangs! Zoom away!" } }
     },
     {
       "id": "maya", "order": 12, "name": "Popol Vuh Canopy",
       "culture": "Maya", "region": "americas", "place": "Mexico, Guatemala & Belize",
-      "era": "Classic period c. 250 – 900 CE", "tags": ["famous", "ancient"], "living": true,
+      "era": "Classic period c. 250 – 900 CE", "tags": ["famous", "ancient"], "living": true, "motif": "mayaStep",
       "palette": { "skyTop": "#006466", "skyBottom": "#F8F3A0", "far": "#4D908E", "mid": "#2D6A4F", "near": "#1B4332", "ground": "#EDE0D4", "groundEdge": "#B08968", "accent": "#FF6D00" },
       "scenery": { "far": "rolling", "landmarks": ["stepPyramid", "palm", "fern"], "weather": "rain", "amplitude": 60, "frequency": 1.1 },
       "facts": [
@@ -200,13 +211,14 @@
       ],
       "relic": { "name": "Cacao Beans", "text": "Cacao beans were so valuable in Mesoamerica that they were used as money.", "kid": "Chocolate beans used to be money! Imagine paying with chocolate!" },
       "guardian": { "name": "Seven Macaw", "kind": "creature", "shape": "bird", "color": "#F94144", "suggestedMode": "gauntlet",
+        "design": {"eyes": "mirror", "headgear": "feathers", "wings": true, "tail": "plume", "aura": "stars", "signature": "jewelTeeth"},
         "intro": { "text": "Seven Macaw, the boastful bird who claimed to be the sun! In the Popol Vuh, the Hero Twins brought him down.", "kid": "A show-off macaw says he's the sun! The Hero Twins outsmarted him — let's do it too!" } },
       "review": "Living descendants: consult Maya cultural advisors on imagery."
     },
     {
       "id": "slavic", "order": 13, "name": "Birchwood of Koschei",
       "culture": "Slavic", "region": "europe", "place": "Eastern Europe",
-      "era": "Folktales recorded in the 1800s", "tags": ["lesserKnown", "medieval"], "living": false,
+      "era": "Folktales recorded in the 1800s", "tags": ["lesserKnown", "medieval"], "living": false, "motif": "crossStitch",
       "palette": { "skyTop": "#4361EE", "skyBottom": "#F8EDEB", "far": "#B8C0FF", "mid": "#7678ED", "near": "#3D348B", "ground": "#F8F9FF", "groundEdge": "#C8B6FF", "accent": "#FF5400" },
       "scenery": { "far": "rolling", "landmarks": ["onionDome", "birch", "hut"], "weather": "snow", "amplitude": 60, "frequency": 1.0 },
       "facts": [
@@ -216,12 +228,13 @@
       ],
       "relic": { "name": "Firebird Feather", "text": "In the tales, one Firebird feather glows bright enough to light a room. The story inspired Stravinsky's 1910 ballet.", "kid": "In the stories, one Firebird feather glows like a lamp!" },
       "guardian": { "name": "Koschei the Deathless", "kind": "creature", "shape": "spirit", "color": "#3C1642", "suggestedMode": "weakpoint",
+        "design": {"eyes": "hollow", "headgear": "crown", "tail": "none", "aura": "frost", "signature": "needleEgg"},
         "intro": { "text": "Koschei the Deathless! He hid his death in a needle, in an egg, in a duck, in a hare, in an iron chest. Keep running!", "kid": "Koschei hid his weakness inside an egg inside a duck inside a hare! Silly — and spooky. Run!" } }
     },
     {
       "id": "zulu", "order": 14, "name": "Valley of the Storm Serpent",
       "culture": "Zulu", "region": "africa", "place": "South Africa",
-      "era": "Zulu Kingdom from 1816 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Zulu Kingdom from 1816 CE", "tags": ["lesserKnown"], "living": true, "motif": "beadTriangles",
       "palette": { "skyTop": "#3D5A80", "skyBottom": "#FFB703", "far": "#EE9B00", "mid": "#CA6702", "near": "#6B4226", "ground": "#E9D8A6", "groundEdge": "#BB3E03", "accent": "#0A9396" },
       "scenery": { "far": "mesas", "landmarks": ["hut", "acacia"], "weather": "none", "amplitude": 70, "frequency": 0.9 },
       "facts": [
@@ -231,13 +244,14 @@
       ],
       "relic": { "name": "Ucu Beads", "text": "In Zulu beadwork each color carries meanings — white often stands for love and purity.", "kid": "In Zulu beadwork, white beads often mean love!" },
       "guardian": { "name": "Inkanyamba", "kind": "creature", "shape": "storm", "color": "#1D3557", "suggestedMode": "chase",
+        "design": {"headgear": "mane", "tail": "serpent", "aura": "lightning", "signature": "horseMane"},
         "intro": { "text": "Inkanyamba, the giant storm serpent! Zulu and Xhosa stories blame it for the whirling summer tornadoes.", "kid": "A giant serpent made of storm winds! Outrun the whirlwind!" } },
       "review": "Living culture: consult Zulu cultural advisors."
     },
     {
       "id": "inuit", "order": 15, "name": "Sedna's Ice Sea",
       "culture": "Inuit", "region": "americas", "place": "Arctic Canada, Greenland & Alaska",
-      "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true,
+      "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true, "motif": "furTrim",
       "palette": { "skyTop": "#03045E", "skyBottom": "#48CAE4", "far": "#90E0EF", "mid": "#00B4D8", "near": "#0077B6", "ground": "#FFFFFF", "groundEdge": "#CAF0F8", "accent": "#80FFDB" },
       "scenery": { "far": "icebergs", "landmarks": ["inuksuk", "igloo"], "weather": "aurora", "amplitude": 40, "frequency": 0.9 },
       "facts": [
@@ -247,13 +261,14 @@
       ],
       "relic": { "name": "Snow Goggles", "text": "Inuit snow goggles, carved from bone, antler or wood with thin slits, protected eyes from snow blindness.", "kid": "Inuit invented snow goggles with tiny slits to protect eyes from bright snow!" },
       "guardian": { "name": "Qalupalik", "kind": "creature", "shape": "spirit", "color": "#2A9D8F", "suggestedMode": "chase",
+        "design": {"headgear": "hood", "tail": "fish", "aura": "frost", "signature": "amautik"},
         "intro": { "text": "Qalupalik! Parents told of this sea creature so children would stay away from thin ice and the water's edge.", "kid": "Qalupalik is a story that keeps kids safe from thin ice! Stay on solid ground and run!" } },
       "review": "Living culture: stories vary by community. Consult Inuit advisors (e.g. via Inuit Tapiriit Kanatami)."
     },
     {
       "id": "persian", "order": 16, "name": "Ferdowsi's Peaks",
       "culture": "Persian", "region": "middleEast", "place": "Iran",
-      "era": "Shahnameh completed c. 1010 CE", "tags": ["lesserKnown", "medieval"], "living": true,
+      "era": "Shahnameh completed c. 1010 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "girih",
       "palette": { "skyTop": "#0D3B66", "skyBottom": "#FAF0CA", "far": "#F4D35E", "mid": "#EE964B", "near": "#8D3B72", "ground": "#FFF8E7", "groundEdge": "#F4A259", "accent": "#1B98E0" },
       "scenery": { "far": "peaks", "landmarks": ["dome", "pine"], "weather": "none", "amplitude": 75, "frequency": 1.0 },
       "facts": [
@@ -263,12 +278,13 @@
       ],
       "relic": { "name": "Simurgh Feather", "text": "In the Shahnameh, the Simurgh gave Zal feathers to burn whenever he needed her help.", "kid": "Burn a Simurgh feather, and the giant bird comes to help!" },
       "guardian": { "name": "The White Div", "kind": "creature", "shape": "giant", "color": "#ADB5BD", "suggestedMode": "weakpoint",
+        "design": {"horns": "bull", "tail": "none", "aura": "smoke", "signature": "stoneClub"},
         "intro": { "text": "The White Div! The hero Rostam fought this demon in a cave during his Seven Labors. Be as swift as Rostam's horse Rakhsh!", "kid": "A big white monster! The hero Rostam beat it with help from his brave horse. Gallop!" } }
     },
     {
       "id": "hawaiian", "order": 17, "name": "Fire Islands",
       "culture": "Hawaiian", "region": "oceania", "place": "Hawaiʻi",
-      "era": "Settled c. 1000 – 1200 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Settled c. 1000 – 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "kapa",
       "palette": { "skyTop": "#5A189A", "skyBottom": "#FF9E00", "far": "#FF6D00", "mid": "#C9184A", "near": "#2D0A31", "ground": "#3A3D5C", "groundEdge": "#EF233C", "accent": "#FFD166" },
       "scenery": { "far": "volcano", "landmarks": ["palm"], "weather": "embers", "amplitude": 70, "frequency": 1.1 },
       "facts": [
@@ -278,13 +294,14 @@
       ],
       "relic": { "name": "Star Compass", "text": "Navigators memorized where dozens of stars rise and set on the horizon — a 'star compass' held in the mind.", "kid": "Hawaiian navigators kept a map of the stars in their heads!" },
       "guardian": { "name": "Lava Surge", "kind": "force", "shape": "wave", "color": "#F3722C", "suggestedMode": "chase",
+        "design": {"tail": "none", "aura": "flames", "signature": "peleHair"},
         "intro": { "text": "The volcano wakes! Hawaiians honor it as the home of Pele, goddess of fire. Respect her power — and run!", "kid": "Hot lava is flowing! Volcanoes make new land in Hawaiʻi. Run ahead!" } },
       "review": "Living culture: Pele is a revered deity — never depict her as an enemy. Consult Native Hawaiian advisors."
     },
     {
       "id": "inca", "order": 18, "name": "Sky Roads of the Andes",
       "culture": "Inca", "region": "americas", "place": "Peru, Bolivia, Ecuador & Chile",
-      "era": "c. 1438 – 1533 CE", "tags": ["famous", "ancient"], "living": true,
+      "era": "c. 1438 – 1533 CE", "tags": ["famous", "ancient"], "living": true, "motif": "tocapu",
       "palette": { "skyTop": "#00296B", "skyBottom": "#FDC500", "far": "#A3B18A", "mid": "#588157", "near": "#344E41", "ground": "#F2E9E4", "groundEdge": "#C9ADA7", "accent": "#FFD500" },
       "scenery": { "far": "peaks", "landmarks": ["terraces", "hut"], "weather": "mist", "amplitude": 110, "frequency": 1.4 },
       "facts": [
@@ -294,13 +311,14 @@
       ],
       "relic": { "name": "Quipu", "text": "Trained record-keepers called quipucamayocs read a quipu by the color, position and type of its knots.", "kid": "Each knot's color and position meant something — like a secret code!" },
       "guardian": { "name": "Amaru", "kind": "creature", "shape": "serpent", "color": "#6A994E", "suggestedMode": "gauntlet",
+        "design": {"heads": 2, "headgear": "crest", "wings": true, "tail": "fish", "aura": "leaves", "signature": "featheredSerpent"},
         "intro": { "text": "Amaru, the great serpent of the Andes, linked the underworld and the sky. Here it comes!", "kid": "Amaru is a giant mountain serpent! Climb fast!" } },
       "review": "Quechua and Aymara peoples are living descendants: consult Andean cultural advisors."
     },
     {
       "id": "finnish", "order": 19, "name": "Land of the Kalevala",
       "culture": "Finnish", "region": "europe", "place": "Finland & Karelia",
-      "era": "Kalevala published 1835", "tags": ["lesserKnown"], "living": false,
+      "era": "Kalevala published 1835", "tags": ["lesserKnown"], "living": false, "motif": "kantele",
       "palette": { "skyTop": "#4EA8DE", "skyBottom": "#FFCDB2", "far": "#98C1D9", "mid": "#3D5A80", "near": "#293241", "ground": "#F1FAEE", "groundEdge": "#98C1D9", "accent": "#EE6C4D" },
       "scenery": { "far": "rolling", "landmarks": ["pine", "birch", "hut"], "weather": "snow", "amplitude": 55, "frequency": 1.1 },
       "facts": [
@@ -310,12 +328,13 @@
       ],
       "relic": { "name": "Sampo Shard", "text": "The Sampo, forged by the smith Ilmarinen, was a magic mill that ground out grain, salt and gold.", "kid": "The Sampo was a magic mill that made food, salt and gold forever!" },
       "guardian": { "name": "Louhi the Eagle", "kind": "creature", "shape": "bird", "color": "#3A506B", "suggestedMode": "chase",
+        "design": {"eyes": "slits", "headgear": "crest", "tail": "plume", "aura": "frost", "signature": "scytheTalons"},
         "intro": { "text": "Louhi, Mistress of the North, turned into a giant eagle to chase the heroes who took the Sampo! Fly!", "kid": "Louhi turned into a giant eagle! Run, run!" } }
     },
     {
       "id": "akan", "order": 20, "name": "Anansi's Web Forest",
       "culture": "Akan (Asante)", "region": "africa", "place": "Ghana & Côte d'Ivoire",
-      "era": "Asante Empire from c. 1701 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Asante Empire from c. 1701 CE", "tags": ["lesserKnown"], "living": true, "motif": "kente",
       "palette": { "skyTop": "#007F5F", "skyBottom": "#EEEF20", "far": "#80B918", "mid": "#2B9348", "near": "#1B4332", "ground": "#FFD166", "groundEdge": "#E85D04", "accent": "#FFBA08" },
       "scenery": { "far": "rolling", "landmarks": ["hut", "palm", "baobab"], "weather": "leaves", "amplitude": 60, "frequency": 1.2 },
       "facts": [
@@ -325,13 +344,14 @@
       ],
       "relic": { "name": "Sankofa Stamp", "text": "Sankofa, an Adinkra symbol, means 'go back and get it' — learn from the past to build the future.", "kid": "The Sankofa bird looks backward. It means: learn from the past!" },
       "guardian": { "name": "Sasabonsam", "kind": "creature", "shape": "spirit", "color": "#3D2C2E", "suggestedMode": "gauntlet",
+        "design": {"wings": true, "tail": "none", "aura": "leaves", "signature": "ironHooks"},
         "intro": { "text": "Sasabonsam! This forest creature hangs from tall trees and swoops on travelers. Don't linger under the branches!", "kid": "A spooky tree creature! Keep moving through the forest!" } },
       "review": "Living culture: consult Akan cultural advisors."
     },
     {
       "id": "mongolian", "order": 21, "name": "Eternal Blue Sky Steppe",
       "culture": "Mongolian", "region": "asia", "place": "Mongolia",
-      "era": "Mongol Empire 1206 – 1368 CE", "tags": ["lesserKnown", "medieval"], "living": true,
+      "era": "Mongol Empire 1206 – 1368 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "ulzii",
       "palette": { "skyTop": "#0077B6", "skyBottom": "#CAF0F8", "far": "#A7C957", "mid": "#6A994E", "near": "#386641", "ground": "#F2E8CF", "groundEdge": "#BC4749", "accent": "#00B4D8" },
       "scenery": { "far": "rolling", "landmarks": ["yurt", "cairn"], "weather": "leaves", "amplitude": 40, "frequency": 0.7 },
       "facts": [
@@ -341,12 +361,13 @@
       ],
       "relic": { "name": "Khadag Scarf", "text": "A khadag is offered with both hands as a sign of respect at greetings and ceremonies.", "kid": "Give a blue scarf with both hands — it's a big hello of respect!" },
       "guardian": { "name": "The Mangus", "kind": "creature", "shape": "giant", "color": "#6D597A", "suggestedMode": "chase",
+        "design": {"heads": 5, "horns": "ram", "tail": "none", "aura": "dust", "signature": "manyHeads"},
         "intro": { "text": "A mangus! These many-headed ogres battle heroes like King Geser in Mongolian epics. Ride like the wind!", "kid": "A many-headed ogre! The hero Geser beat lots of them. Ride like the wind!" } }
     },
     {
       "id": "hittite", "order": 22, "name": "Lion Gate of Hattusa",
       "culture": "Hittite", "region": "middleEast", "place": "Türkiye (Anatolia)",
-      "era": "c. 1650 – 1180 BCE", "tags": ["lesserKnown", "ancient"], "living": false,
+      "era": "c. 1650 – 1180 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "hittiteSpiral",
       "palette": { "skyTop": "#264653", "skyBottom": "#E9C46A", "far": "#F4A261", "mid": "#E76F51", "near": "#6D3B2A", "ground": "#F5EBE0", "groundEdge": "#D5BDAF", "accent": "#2A9D8F" },
       "scenery": { "far": "mesas", "landmarks": ["lionGate", "pine"], "weather": "none", "amplitude": 70, "frequency": 1.0 },
       "facts": [
@@ -356,12 +377,13 @@
       ],
       "relic": { "name": "Treaty Tablet", "text": "A replica of the Hittite–Egyptian peace treaty tablet hangs at the United Nations headquarters in New York.", "kid": "A copy of this ancient peace deal hangs at the United Nations today!" },
       "guardian": { "name": "Illuyanka", "kind": "creature", "shape": "serpent", "color": "#5F0F40", "suggestedMode": "weakpoint",
+        "design": {"eyes": "hollow", "horns": "bull", "tail": "spiked", "aura": "lightning", "signature": "stolenHeart"},
         "intro": { "text": "Illuyanka, the dragon-serpent! In one version, it feasted until it was too fat to escape — then the storm god struck.", "kid": "Illuyanka is a dragon who ate so much at a party it got stuck! Zoom past!" } }
     },
     {
       "id": "rapanui", "order": 23, "name": "Birdman Isle",
       "culture": "Rapa Nui", "region": "oceania", "place": "Rapa Nui (Easter Island), Chile",
-      "era": "Settled c. 1200 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Settled c. 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "rongorongo",
       "palette": { "skyTop": "#168AAD", "skyBottom": "#FDFFB6", "far": "#76C893", "mid": "#52B69A", "near": "#1A759F", "ground": "#D8F3DC", "groundEdge": "#99D98C", "accent": "#FF9F1C" },
       "scenery": { "far": "rolling", "landmarks": ["moai", "palm"], "weather": "none", "amplitude": 60, "frequency": 1.0 },
       "facts": [
@@ -371,13 +393,14 @@
       ],
       "relic": { "name": "Manutara Egg", "text": "In the Birdman contest, racers swam to an islet to bring back the season's first sooty tern egg.", "kid": "In the Birdman race, swimmers raced to find the first bird egg of spring!" },
       "guardian": { "name": "The Birdman Race", "kind": "trial", "shape": "bird", "color": "#2B2D42", "suggestedMode": "chase",
+        "design": {"tail": "plume", "aura": "water", "signature": "firstEgg"},
         "intro": { "text": "The Tangata Manu race! Champions climbed cliffs and swam to Motu Nui for the first tern egg. Race the rival!", "kid": "It's the Birdman race! Beat the champion to the egg!" } },
       "review": "Living culture: consult Rapa Nui advisors on moai imagery."
     },
     {
       "id": "taino", "order": 24, "name": "Hurricane Coast",
       "culture": "Taíno", "region": "americas", "place": "Caribbean (Puerto Rico, Hispaniola, Cuba, Jamaica)",
-      "era": "c. 1000 – 1500 CE", "tags": ["lesserKnown"], "living": true,
+      "era": "c. 1000 – 1500 CE", "tags": ["lesserKnown"], "living": true, "motif": "zemiSpiral",
       "palette": { "skyTop": "#0096C7", "skyBottom": "#FFF1E6", "far": "#48CAE4", "mid": "#2A9D8F", "near": "#1A535C", "ground": "#FFE8B5", "groundEdge": "#FF7D00", "accent": "#F15BB5" },
       "scenery": { "far": "rolling", "landmarks": ["palm", "hut"], "weather": "rain", "amplitude": 50, "frequency": 1.0 },
       "facts": [
@@ -387,13 +410,14 @@
       ],
       "relic": { "name": "Cemí Stone", "text": "Cemís — carved in stone, wood or bone — held spirit power and were kept in homes and ceremonial places.", "kid": "A cemí is a carved spirit stone for good luck!" },
       "guardian": { "name": "Juracán", "kind": "force", "shape": "storm", "color": "#3A0CA3", "suggestedMode": "gauntlet",
+        "design": {"eyes": "hollow", "tail": "none", "aura": "water", "signature": "zemiArms"},
         "intro": { "text": "Juracán! The Taíno knew these spinning storms well — and gave the world the word 'hurricane.' Outrun the eye!", "kid": "A huge spinning storm — a hurricane! Outrun it!" } },
       "review": "Taíno revival communities exist today: consult them."
     },
     {
       "id": "etruscan", "order": 25, "name": "Hill Towns of Etruria",
       "culture": "Etruscan", "region": "europe", "place": "Italy (Tuscany)",
-      "era": "c. 900 – 27 BCE", "tags": ["lesserKnown", "ancient"], "living": false,
+      "era": "c. 900 – 27 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "etruscanWave",
       "palette": { "skyTop": "#5E548E", "skyBottom": "#F9DCC4", "far": "#BE95C4", "mid": "#9F86C0", "near": "#231942", "ground": "#FEEAFA", "groundEdge": "#E0B1CB", "accent": "#FFB703" },
       "scenery": { "far": "rolling", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 65, "frequency": 1.0 },
       "facts": [
@@ -403,12 +427,13 @@
       ],
       "relic": { "name": "Liver of Piacenza", "text": "The Bronze Liver of Piacenza is a model liver divided into regions, each labeled with a god's name.", "kid": "This bronze map has gods' names written all over it — a guide for priests!" },
       "guardian": { "name": "Chimera of Arezzo", "kind": "creature", "shape": "beast", "color": "#B5651D", "suggestedMode": "weakpoint",
+        "design": {"headgear": "mane", "tail": "serpent", "aura": "flames", "signature": "goatAndSerpent"},
         "intro": { "text": "The Chimera — lion, goat and serpent in one! Etruscan artists cast a famous bronze of it around 400 BCE.", "kid": "A lion with a goat head on its back and a snake for a tail! Run!" } }
     },
     {
       "id": "dogon", "order": 26, "name": "Cliffs of Bandiagara",
       "culture": "Dogon", "region": "africa", "place": "Mali",
-      "era": "Cliffs settled from c. 1400s CE", "tags": ["lesserKnown"], "living": true,
+      "era": "Cliffs settled from c. 1400s CE", "tags": ["lesserKnown"], "living": true, "motif": "dogonChevron",
       "palette": { "skyTop": "#9D4EDD", "skyBottom": "#FFB627", "far": "#FF9505", "mid": "#E2711D", "near": "#8A3B12", "ground": "#FFD8A8", "groundEdge": "#CC5803", "accent": "#0FA3B1" },
       "scenery": { "far": "cliffs", "landmarks": ["granary", "baobab"], "weather": "sand", "amplitude": 55, "frequency": 1.0 },
       "facts": [
@@ -418,13 +443,14 @@
       ],
       "relic": { "name": "Kanaga Mask", "text": "The Kanaga mask, topped by a double-barred cross shape, is one of the best-known Dogon masks.", "kid": "This mask has a tall shape like a bird or a person with arms out!" },
       "guardian": { "name": "The Harmattan", "kind": "force", "shape": "storm", "color": "#C9A227", "suggestedMode": "chase",
+        "design": {"eyes": "slits", "tail": "none", "aura": "dust", "signature": "dustStar"},
         "intro": { "text": "The Harmattan! This dry, dusty wind blows off the Sahara every winter. Outrun the wall of dust!", "kid": "A giant dust storm is blowing from the desert! Run ahead of the wind!" } },
       "review": "Living culture with sacred masks: consult Dogon advisors before depicting masks."
     },
     {
       "id": "ainu", "order": 27, "name": "Kamuy Forest",
       "culture": "Ainu", "region": "asia", "place": "Hokkaido (Japan) & Sakhalin",
-      "era": "Recognized as Indigenous by Japan in 2019", "tags": ["lesserKnown"], "living": true,
+      "era": "Recognized as Indigenous by Japan in 2019", "tags": ["lesserKnown"], "living": true, "motif": "ayus",
       "palette": { "skyTop": "#22577A", "skyBottom": "#C7F9CC", "far": "#80ED99", "mid": "#38A3A5", "near": "#22577A", "ground": "#FFFFFF", "groundEdge": "#C7F9CC", "accent": "#E76F51" },
       "scenery": { "far": "peaks", "landmarks": ["pine", "hut"], "weather": "snow", "amplitude": 70, "frequency": 1.2 },
       "facts": [
@@ -434,13 +460,14 @@
       ],
       "relic": { "name": "Ikupasuy", "text": "An ikupasuy is a carved prayer stick used to offer drops of drink and words to the kamuy.", "kid": "This carved stick carries prayers to the gods!" },
       "guardian": { "name": "Northern Blizzard", "kind": "force", "shape": "storm", "color": "#5E7CA0", "suggestedMode": "gauntlet",
+        "design": {"eyes": "slits", "tail": "none", "aura": "frost", "signature": "iceFangs"},
         "intro": { "text": "A blizzard sweeps down from the north! In Ainu stories, even the wind has a spirit — keep moving!", "kid": "A big snowstorm is coming! Stay warm by moving fast!" } },
       "review": "Living culture: consult Ainu advisors (e.g. Upopoy National Ainu Museum)."
     },
     {
       "id": "guarani", "order": 28, "name": "Seven Monsters Jungle",
       "culture": "Guaraní", "region": "americas", "place": "Paraguay, Brazil, Argentina & Bolivia",
-      "era": "Guaraní is an official language of Paraguay", "tags": ["lesserKnown"], "living": true,
+      "era": "Guaraní is an official language of Paraguay", "tags": ["lesserKnown"], "living": true, "motif": "nanduti",
       "palette": { "skyTop": "#118AB2", "skyBottom": "#FFD166", "far": "#06D6A0", "mid": "#1B9AAA", "near": "#073B4C", "ground": "#EAF4D3", "groundEdge": "#8AC926", "accent": "#EF476F" },
       "scenery": { "far": "cliffs", "landmarks": ["palm", "fern"], "weather": "fireflies", "amplitude": 65, "frequency": 1.2 },
       "facts": [
@@ -450,13 +477,14 @@
       ],
       "relic": { "name": "Mate Gourd", "text": "Mate, a tea of yerba leaves, is shared from one gourd passed around a circle of friends.", "kid": "Mate tea is shared from one cup passed around friends!" },
       "guardian": { "name": "Teju Jagua", "kind": "creature", "shape": "beast", "color": "#F48C06", "suggestedMode": "weakpoint",
+        "design": {"heads": 7, "tail": "spiked", "aura": "flames", "signature": "sevenDogs"},
         "intro": { "text": "Teju Jagua! First of the seven legendary monsters — a giant lizard with seven dog-like heads. Hop!", "kid": "A giant lizard with seven heads! Hop hop hop!" } },
       "review": "Living culture: consult Guaraní advisors."
     },
     {
       "id": "filipino", "order": 29, "name": "Moon-Eater's Sea",
       "culture": "Filipino (Visayan)", "region": "asia", "place": "Philippines",
-      "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true,
+      "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true, "motif": "okir",
       "palette": { "skyTop": "#10002B", "skyBottom": "#5A189A", "far": "#7B2CBF", "mid": "#9D4EDD", "near": "#240046", "ground": "#E0AAFF", "groundEdge": "#C77DFF", "accent": "#FFD60A" },
       "scenery": { "far": "karst", "landmarks": ["palm", "hut"], "weather": "fireflies", "amplitude": 50, "frequency": 1.6 },
       "facts": [
@@ -466,12 +494,13 @@
       ],
       "relic": { "name": "Baybayin Script", "text": "Baybayin, a pre-colonial Philippine script, is being revived today on signs, art and logos.", "kid": "Filipinos had their own old alphabet, Baybayin — and people are learning it again!" },
       "guardian": { "name": "Bakunawa", "kind": "creature", "shape": "serpent", "color": "#00B4D8", "suggestedMode": "gauntlet",
+        "design": {"horns": "spikes", "headgear": "crest", "tail": "fish", "aura": "stars", "signature": "moonInMouth"},
         "intro": { "text": "Bakunawa rises from the sea to swallow the moon! Make some noise — and get moving!", "kid": "Bakunawa wants to eat the moon! Let's go save it!" } }
     },
     {
       "id": "san", "order": 30, "name": "Painted Rocks of the Kalahari",
       "culture": "San", "region": "africa", "place": "Botswana, Namibia & South Africa",
-      "era": "Rock art from c. 27,000 years ago", "tags": ["lesserKnown", "ancient"], "living": true,
+      "era": "Rock art from c. 27,000 years ago", "tags": ["lesserKnown", "ancient"], "living": true, "motif": "rockDots",
       "palette": { "skyTop": "#FF5400", "skyBottom": "#FFE5B4", "far": "#FFBD00", "mid": "#FF8500", "near": "#9E0059", "ground": "#FFF1D0", "groundEdge": "#E85D04", "accent": "#390099" },
       "scenery": { "far": "mesas", "landmarks": ["acacia", "baobab"], "weather": "none", "amplitude": 45, "frequency": 0.9 },
       "facts": [
@@ -481,6 +510,7 @@
       ],
       "relic": { "name": "Ostrich Eggshell Beads", "text": "Beads cut from ostrich eggshell have been made in Africa for over 40,000 years — San artisans still make them.", "kid": "People have made beads from ostrich eggs for over 40,000 years!" },
       "guardian": { "name": "The All-Devourer", "kind": "creature", "shape": "spirit", "color": "#3C096C", "suggestedMode": "chase",
+        "design": {"eyes": "hollow", "tail": "none", "aura": "stars", "signature": "starMaw"},
         "intro": { "text": "The All-Devourer! In a /Xam story it swallowed everything in its path — even trees. Don't be next!", "kid": "The All-Devourer eats everything — even trees! Don't let it catch you!" } },
       "review": "Living culture: consult San representatives (e.g. South African San Council)."
     }

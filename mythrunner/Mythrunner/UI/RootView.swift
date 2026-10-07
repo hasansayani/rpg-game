@@ -4,6 +4,23 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
+        #if DEBUG
+        // Screenshot/QA shortcuts: `-previewRealm norse` opens a realm directly,
+        // `-guardianGallery YES` shows every guardian side by side.
+        let args = UserDefaults.standard
+        if let id = args.string(forKey: "previewRealm"), let realm = model.realms.first(where: { $0.id == id }) {
+            GameContainerView(realm: realm, onExit: {}, onNext: { _ in })
+        } else if args.bool(forKey: "guardianGallery") {
+            GuardianGalleryView()
+        } else {
+            mainFlow
+        }
+        #else
+        mainFlow
+        #endif
+    }
+
+    @ViewBuilder private var mainFlow: some View {
         if model.settings.age == nil {
             AgeGateView { age in model.settings.age = age }
         } else {

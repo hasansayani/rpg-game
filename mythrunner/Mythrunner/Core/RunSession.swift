@@ -5,6 +5,7 @@ struct SessionEvents {
     var runner: [RunnerEvent] = []
     var guardian: [GuardianEvent] = []
     var relicsCollected: [Int] = []
+    var pickups: [Pickup] = []
     var phaseChanged: RunSession.Phase?
     var companionLine: CompanionLine?
 
@@ -12,9 +13,18 @@ struct SessionEvents {
         runner.removeAll(keepingCapacity: true)
         guardian.removeAll(keepingCapacity: true)
         relicsCollected.removeAll(keepingCapacity: true)
+        pickups.removeAll(keepingCapacity: true)
         phaseChanged = nil
         companionLine = nil
     }
+}
+
+/// Interactive path elements touched this tick (indices into the course arrays).
+enum Pickup: Equatable {
+    case mote(Int)
+    case gate(Int)
+    case springboard(Int)
+    case shrine(Int, healed: Bool)
 }
 
 struct RunResult: Equatable {
@@ -25,6 +35,9 @@ struct RunResult: Equatable {
     var bestCombo: Int
     var loreSeen: [String]
     var time: Double
+    var motes: Int = 0
+    var totalMotes: Int = 0
+    var gates: Int = 0
 }
 
 /// The whole game model for one realm: runner + course + guardian + companion.
@@ -44,12 +57,20 @@ final class RunSession {
     private(set) var companion: CompanionDirector
     private(set) var phase: Phase = .run
     private(set) var collected: Set<Int> = []
+    private(set) var motesCollected = 0
+    private(set) var gatesPassed = 0
     private(set) var loreSeen: [String] = []
     private(set) var time: Double = 0
 
     private var nextFact = 0
     private var accumulator: Double = 0
     private var saidRelicTip = false
+    private var takenMotes: Set<Int> = []
+    private var usedGates: Set<Int> = []
+    private var usedSprings: Set<Int> = []
+    private var usedShrines: Set<Int> = []
+    /// Motes are sorted, so the scan starts from the first one not yet behind the runner.
+    private var moteCursor = 0
 
     init(realm: Realm, totalRealms: Int, tuning: AgeTuning, mode: GuardianMode, companion: CompanionScript) {
         self.realm = realm
@@ -102,6 +123,7 @@ final class RunSession {
 
         if phase == .run {
             checkRelics(&events)
+            checkInteractables(&events)
             checkFacts()
             if runner.x >= course.runLength { enterGuardian(&events) }
         } else if let guardian {
@@ -138,6 +160,50 @@ final class RunSession {
         }
     }
 
+    private func checkInteractables(_ events: inout SessionEvents) {
+        let x = runner.x
+        let riderY = runner.y + 22  // roughly the rider's chest
+
+        let motes = course.motes
+        while moteCursor < motes.count, motes[moteCursor].x < x - 40 { moteCursor += 1 }
+        var i = moteCursor
+        while i < motes.count, motes[i].x < x + 40 {
+            let m = motes[i]
+            if !takenMotes.contains(i), abs(m.x - x) < 26,
+               abs(riderY - (course.surface(at: m.x) + m.lift)) < 40 {
+                takenMotes.insert(i)
+                motesCollected += 1
+                events.pickups.append(.mote(i))
+            }
+            i += 1
+        }
+
+        for (i, g) in course.gates.enumerated() where !usedGates.contains(i) && abs(g.x - x) < 24 {
+            if abs(riderY - (course.surface(at: g.x) + g.lift)) < 46 {
+                usedGates.insert(i)
+                gatesPassed += 1
+                runner.addBoost(150)
+                events.pickups.append(.gate(i))
+            }
+        }
+
+        for (i, s) in course.springboards.enumerated()
+        where !usedSprings.contains(i) && runner.grounded && abs(s.x - x) < 22 {
+            usedSprings.insert(i)
+            runner.launch(events: &events.runner)
+            events.pickups.append(.springboard(i))
+        }
+
+        for (i, s) in course.shrines.enumerated() where !usedShrines.contains(i) && abs(s.x - x) < 30 {
+            if runner.heightAboveGround < s.lift + 140 {
+                usedShrines.insert(i)
+                let healed = runner.heal()
+                if !healed { runner.addBoost(120) }
+                events.pickups.append(.shrine(i, healed: healed))
+            }
+        }
+    }
+
     private func checkFacts() {
         while nextFact < course.factTriggers.count, runner.x >= course.factTriggers[nextFact] {
             let fact = realm.facts[nextFact]
@@ -170,6 +236,7 @@ final class RunSession {
     var result: RunResult {
         RunResult(realmID: realm.id, won: phase == .won, relics: collected.count,
                   flips: runner.totalFlips, bestCombo: runner.bestCombo,
-                  loreSeen: loreSeen, time: time)
+                  loreSeen: loreSeen, time: time,
+                  motes: motesCollected, totalMotes: course.motes.count, gates: gatesPassed)
     }
 }

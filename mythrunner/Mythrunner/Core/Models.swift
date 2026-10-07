@@ -70,6 +70,8 @@ struct Realm: Codable, Identifiable, Hashable {
     var era: String
     var tags: [String]
     var living: Bool
+    /// Decorative pattern for the rider's outfit and the guardian's body in this realm.
+    var motif: Motif
     var palette: Palette
     var scenery: Scenery
     var facts: [Lore]
@@ -159,6 +161,8 @@ struct Guardian: Codable, Hashable {
     var shape: GuardianShape
     var color: String
     var suggestedMode: GuardianMode
+    /// Anatomy, finish and the unique signature detail; see GuardianDesign.
+    var design: GuardianDesign
     var intro: Lore
 }
 

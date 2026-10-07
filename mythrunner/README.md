@@ -20,6 +20,20 @@ An Alto's Odyssey–style side-scrolling runner through **30 realms of world myt
 - A clean flip landing gives a speed boost. Land a half‑flip and you crash.
 - Collect the 3 glowing relics to unlock their stories.
 
+| | Jump (hold to flip) | Pause / resume | Back |
+|---|---|---|---|
+| Touch | tap / hold | ⏸ button | — |
+| Keyboard | Space, ↑, W, Return | Esc, P | Backspace |
+| Gamepad (Bluetooth / MFi) | Ⓐ, D-pad ↑, R1, R2 | Menu | Ⓑ |
+
+On the results screen, jump = next realm (or retry after a loss) and back = map.
+
+## On the path
+- **Springboards** launch you high; the landing zone is always clear.
+- **Spirit gates** (floating rings) give a speed boost when you jump through.
+- **Spirit motes** trail over obstacles and along open ground; your count shows on the results screen.
+- **Heart shrines** (a pillar of light, one per realm, two on the longest) restore a heart, or boost you at full health.
+
 ## Test the core (no Mac needed)
 ```bash
 swift test            # macOS or Linux with Swift 5.9+
@@ -41,4 +55,8 @@ docs/         DESIGN.md (GDD, KPIs, realm list), PORTING_GODOT.md
 ```
 
 ## Adding a realm
-Add one entry to `realms.json`: palette, scenery, facts, relic, guardian. Then run `swift test`. No code changes are needed unless you want a new landmark shape (`Game/SceneryPainter.swift`) or guardian archetype (`Game/GuardianNode.swift`).
+Add one entry to `realms.json`: palette, scenery, `motif`, facts, relic, guardian (with its `design`). Then run `swift test`. No code changes are needed unless you want a new landmark shape (`Game/SceneryPainter.swift`), guardian archetype (`Game/GuardianNode.swift`), motif (`Game/MotifPainter.swift`) or signature detail (`Game/GuardianSignatures.swift`).
+
+Each guardian's `design` sets heads, eyes, horns, headgear, wings, tail and aura, plus a `signature`: one detail from its myth that no other guardian uses. `swift test` fails if two guardians share a design or a signature, so bosses never repeat.
+
+Debug builds accept launch arguments for QA: `-previewRealm norse` opens a realm directly, and `-guardianGallery YES -galleryPage 0` shows ten guardians per page (tap for the next page).

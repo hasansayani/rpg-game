@@ -36,6 +36,10 @@ final class GameScene: SKScene {
     private var projectileNodes: [Int: SKSpriteNode] = [:]
     private var warningNodes: [Int: SKSpriteNode] = [:]
     private var weakPointNode: SKSpriteNode!
+    private var moteNodes: [SKSpriteNode] = []
+    private var gateNodes: [SKSpriteNode] = []
+    private var springNodes: [SKSpriteNode] = []
+    private var shrineNodes: [SKNode] = []
 
     // Terrain chunks (generated lazily, recycled)
     private let chunkWidth: CGFloat = 600
@@ -201,8 +205,11 @@ final class GameScene: SKScene {
             relicNodes.append(node)
         }
 
+        buildInteractables()
+
         player = PlayerNode(body: RGBA(hex: "#2B2D42"), board: palette.accent,
-                            scarfColor: RGBA(hex: "#FF4D6D"), spark: dot)
+                            scarfColor: RGBA(hex: "#FF4D6D"), trim: palette.accent.lighter(0.15),
+                            motif: setup.realm.motif, spark: dot)
         player.zPosition = 10
         player.setTrailTarget(world)
         world.addChild(player)
@@ -212,7 +219,7 @@ final class GameScene: SKScene {
         lumi.position = CGPoint(x: session.runner.x, y: session.runner.y + 90)
         world.addChild(lumi)
 
-        guardianNode = GuardianNode(shape: setup.realm.guardian.shape, color: palette.guardian,
+        guardianNode = GuardianNode(realm: setup.realm, color: palette.guardian,
                                     eye: palette.accent, cute: setup.tuning.cuteGuardians, dot: dot)
         guardianNode.zPosition = 8
         guardianNode.alpha = 0
@@ -386,10 +393,112 @@ final class GameScene: SKScene {
         }
     }
 
+    private func buildInteractables() {
+        let course = session.course
+
+        // Motes: tiny additive glows. Static, so hundreds of them cost almost nothing.
+        let moteColor = palette.accent.lighter(0.35).skColor
+        for (i, m) in course.motes.enumerated() {
+            let n = SKSpriteNode(texture: dot)
+            n.color = moteColor
+            n.colorBlendFactor = 1
+            n.blendMode = .add
+            n.size = CGSize(width: 18, height: 18)
+            n.position = CGPoint(x: m.x, y: course.surface(at: m.x) + m.lift)
+            n.zPosition = 6
+            // Stagger the shimmer along each trail.
+            n.run(.sequence([.wait(forDuration: Double(i % 5) * 0.12),
+                             .repeatForever(.sequence([.scale(to: 1.3, duration: 0.45), .scale(to: 0.85, duration: 0.45)]))]))
+            world.addChild(n)
+            moteNodes.append(n)
+        }
+
+        let gateTex = TextureFactory.spiritGate(color: palette.accent)
+        for g in course.gates {
+            let n = SKSpriteNode(texture: gateTex)
+            n.position = CGPoint(x: g.x, y: course.surface(at: g.x) + g.lift)
+            n.zPosition = 6
+            n.run(.repeatForever(.sequence([.moveBy(x: 0, y: 6, duration: 0.9), .moveBy(x: 0, y: -6, duration: 0.9)])))
+            world.addChild(n)
+            gateNodes.append(n)
+        }
+
+        let springTex = TextureFactory.springboard(wood: palette.near.mixed(with: palette.groundEdge, 0.4), glow: palette.accent)
+        for sb in course.springboards {
+            let n = SKSpriteNode(texture: springTex)
+            n.anchorPoint = CGPoint(x: 0.5, y: 0)
+            // Sit the ramp's tall end on the springboard x and follow the local slope.
+            n.position = CGPoint(x: sb.x - 10, y: course.surface(at: sb.x - 10) - 4)
+            n.zRotation = CGFloat(atan(course.slope(at: sb.x)))
+            n.zPosition = 5
+            // A pulsing glow so it reads as "ride over me", not as a rock.
+            let glow = SKSpriteNode(texture: dot)
+            glow.color = palette.accent.skColor
+            glow.colorBlendFactor = 1
+            glow.blendMode = .add
+            glow.size = CGSize(width: 90, height: 60)
+            glow.position = CGPoint(x: 6, y: 16)
+            glow.zPosition = -0.1
+            glow.run(.repeatForever(.sequence([.fadeAlpha(to: 0.35, duration: 0.45), .fadeAlpha(to: 0.9, duration: 0.45)])))
+            n.addChild(glow)
+            world.addChild(n)
+            springNodes.append(n)
+        }
+
+        let shrineTex = TextureFactory.shrine(stone: palette.near.lighter(0.2), flame: RGBA(hex: "#FF4D6D"))
+        let beamTex = TextureFactory.verticalFade(color: RGBA(hex: "#FFB3C1"), topAlpha: 0, bottomAlpha: 0.55)
+        for sh in course.shrines {
+            let node = SKNode()
+            node.position = CGPoint(x: sh.x, y: course.surface(at: sh.x))
+            node.zPosition = 6
+            let beam = SKSpriteNode(texture: beamTex)
+            beam.anchorPoint = CGPoint(x: 0.5, y: 0)
+            beam.size = CGSize(width: 34, height: 220)
+            beam.blendMode = .add
+            beam.run(.repeatForever(.sequence([.fadeAlpha(to: 0.55, duration: 0.8), .fadeAlpha(to: 1, duration: 0.8)])))
+            node.addChild(beam)
+            let shrine = SKSpriteNode(texture: shrineTex)
+            shrine.anchorPoint = CGPoint(x: 0.5, y: 0)
+            shrine.position = CGPoint(x: 0, y: -4)
+            node.addChild(shrine)
+            world.addChild(node)
+            shrineNodes.append(node)
+        }
+    }
+
+    private func handlePickups(_ pickups: [Pickup]) {
+        for p in pickups {
+            switch p {
+            case .mote(let i):
+                let n = moteNodes[i]
+                n.removeAllActions()
+                n.run(.sequence([.group([.scale(to: 2.4, duration: 0.18), .fadeOut(withDuration: 0.18)]), .removeFromParent()]))
+            case .gate(let i):
+                let n = gateNodes[i]
+                n.removeAllActions()
+                n.run(.sequence([.group([.scale(to: 1.6, duration: 0.3), .fadeOut(withDuration: 0.3)]), .removeFromParent()]))
+                haptics.success()
+                popText("BOOST!", at: n.position)
+            case .springboard(let i):
+                let n = springNodes[i]
+                n.run(.sequence([.scaleY(to: 0.6, duration: 0.06), .scaleY(to: 1.15, duration: 0.1), .scaleY(to: 1, duration: 0.12)]))
+                haptics.heavy()
+            case .shrine(let i, let healed):
+                let n = shrineNodes[i]
+                n.children.first?.run(.sequence([.scaleX(to: 3, duration: 0.25), .fadeOut(withDuration: 0.5), .removeFromParent()]))
+                haptics.success()
+                lumi.ping()
+                popText(healed ? "+1 ♥" : "BLESSING!", at: CGPoint(x: n.position.x, y: player.position.y))
+            }
+        }
+    }
+
     private func handle(_ e: SessionEvents, time: TimeInterval) {
+        handlePickups(e.pickups)
         for ev in e.runner {
             switch ev {
             case .jumped: haptics.light()
+            case .launched: popText("LAUNCH!", at: player.position)
             case .landed(let flips) where flips > 0:
                 haptics.success()
                 popText(flips > 1 ? "\(flips)× FLIP!" : "FLIP!", at: player.position)

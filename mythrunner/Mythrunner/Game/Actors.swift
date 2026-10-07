@@ -7,21 +7,28 @@ import UIKit
 final class PlayerNode: SKNode {
     private let sprite: SKSpriteNode
     private let scarf = SKShapeNode()
+    private let scarfStripe = SKShapeNode()
     private let boostTrail: SKEmitterNode
     private var scarfPoints: [CGPoint] = []
 
-    init(body: RGBA, board: RGBA, scarfColor: RGBA, spark: SKTexture) {
-        sprite = SKSpriteNode(texture: TextureFactory.rider(body: body, board: board))
-        sprite.anchorPoint = CGPoint(x: 0.5, y: 0.04)
+    init(body: RGBA, board: RGBA, scarfColor: RGBA, trim: RGBA, motif: Motif, spark: SKTexture) {
+        sprite = SKSpriteNode(texture: TextureFactory.rider(body: body, board: board, motif: motif, trim: trim))
+        sprite.anchorPoint = CGPoint(x: 0.5, y: 0.07)
         boostTrail = SKEmitterNode()
         super.init()
 
         scarf.strokeColor = scarfColor.skColor
-        scarf.lineWidth = 4
+        scarf.lineWidth = 5
         scarf.lineCap = .round
         scarf.lineJoin = .round
         scarf.zPosition = -1
         addChild(scarf)
+        // A thin stripe in the realm's trim color runs down the scarf.
+        scarfStripe.strokeColor = trim.skColor
+        scarfStripe.lineWidth = 1.5
+        scarfStripe.lineCap = .round
+        scarfStripe.zPosition = -0.5
+        addChild(scarfStripe)
         addChild(sprite)
 
         boostTrail.particleTexture = spark
@@ -63,6 +70,7 @@ final class PlayerNode: SKNode {
         let path = CGMutablePath()
         path.addLines(between: scarfPoints)
         scarf.path = path
+        scarfStripe.path = path
     }
 }
 

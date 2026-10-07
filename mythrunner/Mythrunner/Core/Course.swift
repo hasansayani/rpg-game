@@ -18,6 +18,31 @@ struct RelicSpot: Equatable {
     var lift: Double
 }
 
+/// A launch pad on the ground: riding over it throws the runner high into the air.
+struct Springboard: Equatable {
+    var x: Double
+}
+
+/// A floating ring. Passing through it grants a speed boost.
+struct SpiritGate: Equatable {
+    var x: Double
+    /// Height of the ring's center above the ground surface.
+    var lift: Double
+}
+
+/// A small glowing collectible. Motes come in trails: arcs over obstacles and lines along the ground.
+struct Mote: Equatable {
+    var x: Double
+    var lift: Double
+}
+
+/// A shrine with a pillar of light: riding through it (on the ground or jumping) restores one heart,
+/// or boosts at full health.
+struct HeartShrine: Equatable {
+    var x: Double
+    var lift: Double
+}
+
 /// A deterministic, infinite course. The "run" section (0..<runLength) holds gaps,
 /// obstacles and relics; the guardian phase continues on hazard-free hills after it.
 struct Course {
@@ -31,8 +56,16 @@ struct Course {
     let gaps: [Gap]
     let obstacles: [Obstacle]
     let relics: [RelicSpot]
+    let springboards: [Springboard]
+    let gates: [SpiritGate]
+    /// Sorted by x.
+    let motes: [Mote]
+    let shrines: [HeartShrine]
     /// World x positions where Lumi shares a fact (one per realm fact).
     let factTriggers: [Double]
+
+    /// How far a springboard throws the runner; the landing zone after one is kept hazard-free.
+    static let springboardClearance: Double = 750
 
     private let waves: [(amp: Double, freq: Double, phase: Double)]
 
@@ -40,7 +73,7 @@ struct Course {
         var rng = SeededRandom(seed: realm.seed)
         let difficulty = realm.difficulty(totalRealms: totalRealms)
 
-        let runLength = 6000 + 2400 * difficulty
+        let runLength = 10000 + 4000 * difficulty
         self.runLength = runLength
         let f = realm.scenery.frequency
         let twoPi = Double.pi * 2
@@ -88,10 +121,31 @@ struct Course {
         let sortedGaps = gaps.sorted { $0.start < $1.start }
         self.gaps = sortedGaps
 
-        let obstacleCount = Int(((runLength / 700) * (0.6 + 0.8 * difficulty)) * tuning.obstacleScale + 0.5)
+        // Springboards claim their slots before obstacles so each gets a clear landing zone.
+        var springboards: [Springboard] = []
+        var landingSlots: [Double] = []
+        let springCount = Int(runLength / 3200)
+        for k in 0..<springCount {
+            let target = runLength * (Double(k) + 0.5) / Double(springCount)
+            let candidates = free.filter { x in
+                !sortedGaps.contains { $0.end > x - 120 && $0.start < x + Course.springboardClearance }
+                    && x + Course.springboardClearance < runLength - 200
+                    && !springboards.contains { abs($0.x - x) < 1500 }
+            }
+            guard let x = candidates.min(by: { abs($0 - target) < abs($1 - target) }) else { continue }
+            springboards.append(Springboard(x: x))
+            landingSlots += free.filter { $0 > x && $0 < x + Course.springboardClearance + slot / 2 }
+            free.removeAll { $0 >= x && $0 < x + Course.springboardClearance + slot / 2 }
+        }
+        self.springboards = springboards.sorted { $0.x < $1.x }
+
+        // Longer runs keep obstacle density a little lower than the old short runs, so total risk grows gently.
+        let obstacleCount = Int(((runLength / 875) * (0.6 + 0.8 * difficulty)) * tuning.obstacleScale + 0.5)
         var obstacles: [Obstacle] = []
         for _ in 0..<min(obstacleCount, free.count / 2) {
-            let x = free.removeLast() + rng.range(-60, 60)
+            let base = free.removeLast()
+            var x = base + rng.range(-60, 60)
+            if springboards.contains(where: { x > $0.x - 60 && x < $0.x + Course.springboardClearance + 20 }) { x = base }
             obstacles.append(Obstacle(x: x, width: rng.range(30, 46), height: rng.range(26, 40 + 8 * difficulty)))
         }
         let sortedObstacles = obstacles.sorted { $0.x < $1.x }
@@ -108,6 +162,60 @@ struct Course {
             relics.append(RelicSpot(x: x, lift: rng.range(95, 140)))
         }
         self.relics = relics
+
+        // Interactive extras use the remaining free slots (landing zones are safe for them too),
+        // in a fixed order so seeds stay stable.
+        free = (free + landingSlots).sorted()
+        func clear(of x: Double, before: Double, after: Double) -> Bool {
+            !sortedGaps.contains { $0.end > x - before && $0.start < x + after }
+                && !sortedObstacles.contains { $0.x > x - before && $0.x < x + after }
+                && !relics.contains { abs($0.x - x) < 80 }
+                && !springboards.contains { abs($0.x - x) < 120 }
+        }
+        func inLanding(_ x: Double) -> Bool {
+            springboards.contains { x > $0.x && x < $0.x + Course.springboardClearance }
+        }
+        func take(where ok: (Double) -> Bool) -> Double? {
+            guard let i = free.firstIndex(where: ok) else { return nil }
+            return free.remove(at: i)
+        }
+
+        // A shrine just before halfway, when the run starts to bite.
+        // The longest (late-game) runs get a second one at about three quarters.
+        var shrines: [HeartShrine] = []
+        for start in runLength > 12500 ? [0.45, 0.72] : [0.45] {
+            if let x = take(where: { $0 > runLength * start && !inLanding($0) && clear(of: $0, before: 140, after: 140) }) {
+                shrines.append(HeartShrine(x: x, lift: 46))
+            }
+        }
+        self.shrines = shrines
+
+        // Spirit gates: reachable with a plain jump; a bit higher on harder realms.
+        var gates: [SpiritGate] = []
+        let gateCount = Int(runLength / 1700)
+        for _ in 0..<gateCount {
+            guard !free.isEmpty else { break }
+            let i = Int(rng.next() % UInt64(free.count))
+            let x = free[i]
+            guard clear(of: x, before: 100, after: 100) else { continue }
+            free.remove(at: i)
+            gates.append(SpiritGate(x: x, lift: rng.range(78, 96 + 18 * difficulty)))
+        }
+        self.gates = gates.sorted { $0.x < $1.x }
+
+        // Mote trails: arcs over every other obstacle (rewarding a clean jump), lines along open ground.
+        var motes: [Mote] = []
+        for (n, o) in sortedObstacles.enumerated() where n % 2 == 0 {
+            for k in 0..<5 {
+                let t = Double(k) / 4
+                let peak = o.height + 70
+                motes.append(Mote(x: o.x - 90 + 180 * t, lift: 34 + (peak - 34) * (1 - pow(2 * t - 1, 2))))
+            }
+        }
+        for x in free where !inLanding(x) && clear(of: x, before: 120, after: 120) {
+            for k in 0..<5 { motes.append(Mote(x: x - 80 + Double(k) * 40, lift: 30)) }
+        }
+        self.motes = motes.sorted { $0.x < $1.x }
 
         factTriggers = realm.facts.indices.map { i in
             runLength * (0.08 + 0.64 * Double(i) / Double(max(realm.facts.count - 1, 1)))

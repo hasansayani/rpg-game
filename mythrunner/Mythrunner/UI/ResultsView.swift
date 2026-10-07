@@ -26,6 +26,7 @@ struct ResultsView: View {
                     HStack(spacing: 16) {
                         stat("Relics", "\(result.relics)/3", "diamond.fill")
                         stat("Flips", "\(result.flips)", "arrow.counterclockwise")
+                        stat("Motes", "\(result.motes)/\(result.totalMotes)", "sparkles")
                         stat("Stories", "\(result.loreSeen.count)/\(lore.count)", "book.fill")
                     }
                     .padding(.vertical, 6)

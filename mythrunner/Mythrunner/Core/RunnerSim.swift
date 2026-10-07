@@ -2,6 +2,7 @@ import Foundation
 
 enum RunnerEvent: Equatable {
     case jumped
+    case launched
     case landed(flips: Int)
     case crashed
     case fellInGap
@@ -20,6 +21,8 @@ struct RunnerConfig {
     var flipAngularSpeed: Double = Double.pi * 2 / 0.85
     var landingTolerance: Double
     var flipBoost: Double = 110
+    /// Upward speed from a springboard (≈1.5× a jump).
+    var launchVelocity: Double = 900
     var hearts: Int
     var invulnerableTime: Double = 1.4
     var crashStunTime: Double = 0.7
@@ -192,6 +195,31 @@ final class RunnerSim {
         airRotation = 0
         vy = config.jumpVelocity + max(0, effectiveSpeed * course.slope(at: x)) * 0.4
         events.append(.jumped)
+    }
+
+    /// Springboard: throws the runner up from the ground. Holding doesn't add float, so arcs stay predictable.
+    func launch(events: inout [RunnerEvent]) {
+        guard grounded, stunned <= 0 else { return }
+        grounded = false
+        coyote = 0
+        jumpBuffer = 0
+        holdJumpTime = .infinity
+        airRotation = 0
+        vy = config.launchVelocity
+        boost += 60
+        events.append(.launched)
+    }
+
+    func addBoost(_ amount: Double) {
+        boost += amount
+    }
+
+    /// Restores one heart. Returns false at full health.
+    @discardableResult
+    func heal() -> Bool {
+        guard hearts < config.hearts else { return false }
+        hearts += 1
+        return true
     }
 
     private func land(on ground: Double, events: inout [RunnerEvent]) {

@@ -43,6 +43,15 @@ final class ContentTests: XCTestCase {
         }
     }
 
+    func testEveryGuardianLooksUnique() throws {
+        let catalog = try loadCatalog()
+        let designs = catalog.realms.map(\.guardian.design)
+        XCTAssertEqual(Set(designs).count, catalog.realms.count, "two guardians share a design")
+        XCTAssertEqual(Set(designs.map(\.signature)).count, catalog.realms.count, "two guardians share a signature")
+        XCTAssertEqual(Set(designs.map(\.signature)), Set(GuardianDesign.Signature.allCases), "unused signature art")
+        XCTAssertTrue(designs.allSatisfy { (1...8).contains($0.heads) })
+    }
+
     func testPaletteHexIsValid() throws {
         let catalog = try loadCatalog()
         for realm in catalog.realms {
@@ -122,6 +131,32 @@ final class CourseTests: XCTestCase {
         }
     }
 
+    func testInteractablesArePlacedSafely() throws {
+        let catalog = try loadCatalog()
+        for band in AgeBand.allCases {
+            let tuning = AgeTuning.forBand(band)
+            for realm in catalog.realms {
+                let a = Course(realm: realm, totalRealms: 30, tuning: tuning)
+                let b = Course(realm: realm, totalRealms: 30, tuning: tuning)
+                XCTAssertEqual(a.springboards, b.springboards)
+                XCTAssertEqual(a.gates, b.gates)
+                XCTAssertEqual(a.motes, b.motes)
+                XCTAssertEqual(a.shrines, b.shrines)
+                XCTAssertFalse(a.springboards.isEmpty, realm.id)
+                XCTAssertFalse(a.gates.isEmpty, realm.id)
+                XCTAssertGreaterThan(a.motes.count, 20, realm.id)
+                XCTAssertTrue((1...2).contains(a.shrines.count), realm.id)
+                for s in a.springboards {
+                    let landing = s.x...(s.x + Course.springboardClearance)
+                    XCTAssertFalse(a.gaps.contains { landing.overlaps($0.start...$0.end) }, "\(realm.id): gap after springboard")
+                    XCTAssertFalse(a.obstacles.contains { landing.contains($0.x) }, "\(realm.id): obstacle after springboard")
+                }
+                for g in a.gates { XCTAssertNil(a.gap(at: g.x), realm.id) }
+                XCTAssertTrue(a.motes.allSatisfy { $0.lift > 0 }, realm.id)
+            }
+        }
+    }
+
     func testStartIsFlat() throws {
         let realm = try loadCatalog().realms[2]
         let course = Course(realm: realm, totalRealms: 30, tuning: .forBand(.explorer))
@@ -162,6 +197,33 @@ final class SimulationTests: XCTestCase {
             if !landed.isEmpty { break }
         }
         XCTAssertFalse(landed.isEmpty, "runner should land")
+    }
+
+    func testSpringboardLaunchesAndShrineHeals() throws {
+        let session = try makeSession()
+        let spring = try XCTUnwrap(session.course.springboards.first)
+        let shrine = try XCTUnwrap(session.course.shrines.first)
+        var events = SessionEvents()
+        var launched = false, peak = 0.0
+        var shrineEvent: Pickup?
+        for _ in 0..<(60 * 120) {
+            events.clear()
+            session.advance(1.0 / 60, into: &events)
+            if events.runner.contains(.launched) { launched = true }
+            if launched, abs(session.runner.x - spring.x) < 400 { peak = max(peak, session.runner.heightAboveGround) }
+            for p in events.pickups { if case .shrine = p { shrineEvent = p } }
+            // Jump hazards like the test bot, so the run survives to the shrine.
+            let x = session.runner.x
+            let danger = session.course.obstacles.contains { $0.x - x > 0 && $0.x - x < 110 }
+                || session.course.gaps.contains { $0.start - x > 0 && $0.start - x < 80 }
+            session.release()
+            if danger && session.runner.grounded { session.press() }
+            if session.runner.x > shrine.x + 100 || session.phase != .run { break }
+        }
+        XCTAssertTrue(launched, "riding over a springboard should launch")
+        XCTAssertGreaterThan(peak, 180, "a launch should go well above a normal jump")
+        XCTAssertNotNil(shrineEvent, "riding through the shrine should trigger it")
+        XCTAssertGreaterThan(session.result.motes, 0)
     }
 
     func testCompanionSpeaksFactsAndRecordsLore() throws {

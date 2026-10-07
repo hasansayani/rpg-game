@@ -149,38 +149,6 @@ enum TextureFactory {
         }
     }
 
-    /// The Wayfarer: a hooded rider on a glowing sky-board. Drawn facing right, feet at bottom center.
-    static func rider(body: RGBA, board: RGBA) -> SKTexture {
-        image(size: CGSize(width: 48, height: 56)) { ctx in
-            // Board
-            let boardRect = CGRect(x: 2, y: 47, width: 44, height: 6)
-            ctx.setFillColor(board.cgColor)
-            ctx.addPath(UIBezierPath(roundedRect: boardRect, cornerRadius: 3).cgPath)
-            ctx.fillPath()
-            ctx.setFillColor(board.lighter(0.5).cgColor)
-            ctx.fill(CGRect(x: 8, y: 48, width: 30, height: 1.5))
-            // Legs
-            ctx.setFillColor(body.darker(0.3).cgColor)
-            ctx.addPath(UIBezierPath(roundedRect: CGRect(x: 16, y: 32, width: 6, height: 16), cornerRadius: 3).cgPath)
-            ctx.addPath(UIBezierPath(roundedRect: CGRect(x: 26, y: 32, width: 6, height: 16), cornerRadius: 3).cgPath)
-            ctx.fillPath()
-            // Cloak / torso
-            let torso = UIBezierPath()
-            torso.move(to: CGPoint(x: 14, y: 36))
-            torso.addQuadCurve(to: CGPoint(x: 24, y: 14), controlPoint: CGPoint(x: 12, y: 18))
-            torso.addQuadCurve(to: CGPoint(x: 34, y: 36), controlPoint: CGPoint(x: 36, y: 18))
-            torso.close()
-            ctx.setFillColor(body.cgColor)
-            ctx.addPath(torso.cgPath)
-            ctx.fillPath()
-            // Head + hood
-            ctx.setFillColor(body.darker(0.15).cgColor)
-            ctx.fillEllipse(in: CGRect(x: 17, y: 2, width: 15, height: 15))
-            ctx.setFillColor(RGBA(r: 1, g: 0.86, b: 0.72).cgColor)
-            ctx.fillEllipse(in: CGRect(x: 23, y: 6, width: 8, height: 8))
-        }
-    }
-
     static func relic(color: RGBA) -> SKTexture {
         image(size: CGSize(width: 44, height: 44)) { ctx in
             let c = CGPoint(x: 22, y: 22)

@@ -188,15 +188,20 @@ final class GameScene: SKScene {
         // Obstacles (static; created once).
         let rockTex = TextureFactory.rock(color: palette.near.mixed(with: palette.groundEdge, 0.35))
         let water = session.course.isWater
+        // Obstacles come from the culture's world (jars, rune stones, lanterns…), varied per position.
+        let propTex = (setup.realm.scenery.props ?? []).map {
+            TextureFactory.prop($0, tint: palette.near, accent: palette.accent, motif: setup.realm.motif)
+        }
         let coralTex = water ? (0..<3).map { TextureFactory.coral(color: [palette.accent, RGBA(hex: "#FF6F91"), palette.mid][$0], seed: $0) } : []
         for (i, o) in session.course.obstacles.enumerated() {
-            let rock = SKSpriteNode(texture: water ? coralTex[i % 3] : rockTex)
+            let rock = SKSpriteNode(texture: water ? coralTex[i % 3] : propTex.isEmpty ? rockTex : propTex[Int(o.x) % propTex.count])
             rock.anchorPoint = CGPoint(x: 0.5, y: 0)
             rock.size = CGSize(width: o.width + 8, height: o.height + 6)
             rock.position = CGPoint(x: o.x, y: session.course.surface(at: o.x) - 6)
             rock.zPosition = 5
             world.addChild(rock)
         }
+        if !water { buildPathScenery() }
         if water {
             buildWater()
             // No sun or aurora underwater: the light comes down in shafts instead.
@@ -253,6 +258,36 @@ final class GameScene: SKScene {
             weather.name = "weather"
             cam.addChild(weather)
             weather.advanceSimulationTime(5)
+        }
+    }
+
+    // MARK: Path scenery
+
+    /// The realm's landmarks (palms, pines, torii, yurts, granaries…) standing along the path behind
+    /// the runner, at random spacing that changes every run. Purely decorative: nothing collides.
+    private func buildPathScenery() {
+        let course = session.course
+        let kinds = setup.realm.scenery.landmarks
+        guard !kinds.isEmpty else { return }
+        let color = palette.near.mixed(with: palette.mid, 0.35)
+        let textures = kinds.map { kind in
+            TextureFactory.image(size: CGSize(width: 160, height: 110)) { ctx in
+                LandmarkPainter.draw(kind, ctx: ctx, at: CGPoint(x: 80, y: 106), scale: 1, color: color)
+            }
+        }
+        var rng = SeededRandom(seed: setup.realm.seed ^ setup.variation ^ 0xD1CE)
+        var x = 420.0
+        let end = course.runLength + 4000
+        while x < end {
+            x += rng.range(260, 720)
+            guard course.gap(at: x) == nil, course.gap(at: x - 60) == nil, course.gap(at: x + 60) == nil else { continue }
+            let n = SKSpriteNode(texture: textures[Int(rng.next() % UInt64(textures.count))])
+            n.anchorPoint = CGPoint(x: 0.5, y: 4 / 110)
+            n.setScale(CGFloat(rng.range(0.55, 0.95)))
+            n.position = CGPoint(x: x, y: CGFloat(course.surface(at: x)) - 10)
+            n.zPosition = 3
+            n.alpha = 0.9
+            world.addChild(n)
         }
     }
 
@@ -735,7 +770,8 @@ final class GameScene: SKScene {
             let height = CGFloat(session.course.maxSurface + 30)
             let tex = TextureFactory.terrainChunk(course: session.course, x0: Double(CGFloat(i) * chunkWidth),
                                                   width: chunkWidth + 2, height: height,
-                                                  ground: palette.ground, edge: palette.groundEdge)
+                                                  ground: palette.ground, edge: palette.groundEdge,
+                                                  biome: setup.realm.scenery.resolvedBiome, accent: palette.accent)
             let sprite = SKSpriteNode(texture: tex)
             sprite.anchorPoint = .zero
             sprite.position = CGPoint(x: CGFloat(i) * chunkWidth, y: 0)

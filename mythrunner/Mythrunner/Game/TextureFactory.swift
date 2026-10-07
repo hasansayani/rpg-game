@@ -62,7 +62,7 @@ enum TextureFactory {
 
     /// One chunk of ground. World x in [x0, x0+width), world y from 0 to `height`.
     static func terrainChunk(course: Course, x0: Double, width: CGFloat, height: CGFloat,
-                             ground: RGBA, edge: RGBA) -> SKTexture {
+                             ground: RGBA, edge: RGBA, biome: Biome = .forest, accent: RGBA = RGBA(r: 1, g: 1, b: 1)) -> SKTexture {
         image(size: CGSize(width: width, height: height)) { ctx in
             let step: CGFloat = 6
             // Build ground polygons, splitting at gaps.
@@ -111,6 +111,8 @@ enum TextureFactory {
                 ctx.setStrokeColor(ground.lighter(0.5).cgColor)
                 ctx.setLineWidth(1.5)
                 ctx.strokePath()
+                // The biome's surface character: grass, cobbles, pebbles, snow, sand ripples, lava cracks.
+                groundDetail(biome, ctx: ctx, surface: seg, ground: ground, edge: edge, accent: accent, seed: Int(x0))
             }
         }
     }

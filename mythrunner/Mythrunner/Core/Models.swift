@@ -134,6 +134,33 @@ struct Scenery: Codable, Hashable {
     var amplitude: Double
     /// Relative hill frequency (1.0 = default rolling).
     var frequency: Double
+    /// Ground surface character (grass, cobbles, sand…). Optional in JSON.
+    var biome: Biome?
+    /// What the obstacles on the path are, drawn from the culture's world (jars, rune stones…). Optional.
+    var props: [Prop]?
+
+    var resolvedBiome: Biome {
+        if let biome { return biome }
+        switch far {
+        case .dunes, .mesas: return .desert
+        case .icebergs: return .tundra
+        case .volcano: return .volcanic
+        case .peaks, .cliffs: return .mountain
+        case .karst, .rolling: return .forest
+        }
+    }
+}
+
+/// The ground a realm's path runs over.
+enum Biome: String, Codable, CaseIterable {
+    case forest, jungle, mountain, desert, savanna, steppe, tundra, coast, market, farmland, volcanic
+}
+
+/// Path obstacles, chosen per culture. Avoids sacred objects; these are everyday things of each world.
+enum Prop: String, Codable, CaseIterable {
+    case amphora, column, jar, stoneBlock, runeStone, log, stoneLantern, bambooFence, carvedStone
+    case basket, calabash, pou, barrel, stela, haystack, fence, pot, carpetRoll, lavaRock, masonry
+    case drum, cartWheel, petroglyphStone, thornBush, produceCrate, boulder
 }
 
 enum Terrain: String, Codable {

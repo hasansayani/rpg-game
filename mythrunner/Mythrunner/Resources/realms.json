@@ -24,7 +24,7 @@
       "culture": "Ancient Greek", "region": "europe", "place": "Greece",
       "era": "c. 800 BCE – 400 CE", "tags": ["famous", "ancient"], "living": false, "motif": "meander",
       "palette": { "skyTop": "#3A7BD5", "skyBottom": "#FFD6A5", "far": "#8FB3D9", "mid": "#5C8DB8", "near": "#2F5D7C", "ground": "#F2E8CF", "groundEdge": "#C9B48A", "accent": "#FFC857" },
-      "scenery": { "far": "peaks", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 60, "frequency": 1.0 },
+      "scenery": { "far": "peaks", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 60, "frequency": 1.0, "biome": "mountain", "props": ["amphora", "column"] },
       "facts": [
         { "text": "The Greeks pictured twelve Olympian gods living on Mount Olympus — a real peak, Greece's highest at about 2,918 m.", "kid": "Greek gods lived on Mount Olympus — a real mountain you can climb today!" },
         { "text": "Athens is named for Athena, goddess of wisdom. Her owl was stamped on Athenian silver coins.", "kid": "The city of Athens is named after Athena, goddess of wisdom. Her bird was a wise owl!" },
@@ -40,7 +40,7 @@
       "culture": "Ancient Egyptian", "region": "africa", "place": "Egypt",
       "era": "c. 3100 – 30 BCE", "tags": ["famous", "ancient"], "living": false, "motif": "lotus",
       "palette": { "skyTop": "#2E4E9E", "skyBottom": "#FFB563", "far": "#E9A15B", "mid": "#C97B3C", "near": "#8C4F2B", "ground": "#F6D7A7", "groundEdge": "#D9A86C", "accent": "#2EC4B6" },
-      "scenery": { "far": "dunes", "landmarks": ["pyramid", "palm", "obelisk"], "weather": "sand", "amplitude": 45, "frequency": 0.8 },
+      "scenery": { "far": "dunes", "landmarks": ["pyramid", "palm", "obelisk"], "weather": "sand", "amplitude": 45, "frequency": 0.8, "biome": "desert", "props": ["jar", "stoneBlock"] },
       "facts": [
         { "text": "Egyptians believed the sun god Ra sailed a boat across the sky by day and through the underworld by night.", "kid": "Egyptians thought the sun god Ra rode a boat across the sky every day!" },
         { "text": "In the afterlife, your heart was weighed against the feather of Ma'at, goddess of truth. A light heart meant paradise.", "kid": "In Egyptian stories, your heart was weighed against a feather. A kind, light heart was the goal!" },
@@ -56,7 +56,7 @@
       "culture": "Norse", "region": "europe", "place": "Scandinavia & Iceland",
       "era": "Viking Age, c. 790 – 1100 CE", "tags": ["famous", "medieval"], "living": false, "motif": "knotwork",
       "palette": { "skyTop": "#0B1D3A", "skyBottom": "#3E7CB1", "far": "#5B7DA8", "mid": "#36507A", "near": "#1E2F4D", "ground": "#EEF4FA", "groundEdge": "#A9C4DE", "accent": "#7CFFCB" },
-      "scenery": { "far": "peaks", "landmarks": ["longhouse", "pine", "standingStones"], "weather": "aurora", "amplitude": 90, "frequency": 1.2 },
+      "scenery": { "far": "peaks", "landmarks": ["longhouse", "pine", "standingStones"], "weather": "aurora", "amplitude": 90, "frequency": 1.2, "biome": "forest", "props": ["runeStone", "log"] },
       "facts": [
         { "text": "Norse myth places nine worlds among the branches and roots of Yggdrasil, a giant ash tree at the center of everything.", "kid": "Vikings told of a giant tree called Yggdrasil holding up nine whole worlds!" },
         { "text": "You say Norse gods every week: Wednesday is Woden's (Odin's) day, and Thursday is Thor's day.", "kid": "Thursday means 'Thor's day' — named after the thunder god with the hammer!" },
@@ -72,7 +72,7 @@
       "culture": "Japanese (Shinto)", "region": "asia", "place": "Japan",
       "era": "Kojiki compiled 712 CE", "tags": ["famous"], "living": true, "motif": "seigaiha",
       "palette": { "skyTop": "#FF9AA2", "skyBottom": "#FFE5D9", "far": "#B5A1C9", "mid": "#8D7AAE", "near": "#5E4B8B", "ground": "#FFF5F7", "groundEdge": "#F4B6C2", "accent": "#E63946" },
-      "scenery": { "far": "volcano", "landmarks": ["torii", "pagoda", "pine"], "weather": "petals", "amplitude": 55, "frequency": 1.0 },
+      "scenery": { "far": "volcano", "landmarks": ["torii", "pagoda", "pine"], "weather": "petals", "amplitude": 55, "frequency": 1.0, "biome": "forest", "props": ["stoneLantern", "bambooFence"] },
       "facts": [
         { "text": "When sun goddess Amaterasu hid in a cave, the world went dark. The gods lured her out with laughter, music and a mirror.", "kid": "The sun goddess once hid in a cave and the world went dark! A party and a mirror brought her out." },
         { "text": "In Shinto, kami — spirits — can dwell in mountains, trees and waterfalls. Torii gates mark the way into sacred space.", "kid": "Japanese stories say spirits called kami live in trees and mountains. Red gates show sacred places!" },
@@ -88,7 +88,7 @@
       "culture": "Aztec (Mexica)", "region": "americas", "place": "Mexico",
       "era": "c. 1325 – 1521 CE", "tags": ["famous", "ancient"], "living": false, "motif": "stepFret",
       "palette": { "skyTop": "#0081A7", "skyBottom": "#FDFCDC", "far": "#7FB069", "mid": "#2A9D8F", "near": "#1B5E57", "ground": "#F7E1B5", "groundEdge": "#E07A5F", "accent": "#F4A261" },
-      "scenery": { "far": "volcano", "landmarks": ["stepPyramid", "cactus", "palm"], "weather": "none", "amplitude": 50, "frequency": 0.9 },
+      "scenery": { "far": "volcano", "landmarks": ["stepPyramid", "cactus", "palm"], "weather": "none", "amplitude": 50, "frequency": 0.9, "biome": "market", "props": ["carvedStone", "produceCrate", "basket"] },
       "facts": [
         { "text": "Legend says the Mexica founded Tenochtitlan where they saw an eagle on a cactus. That scene is on Mexico's flag today.", "kid": "The Aztecs built their city where they saw an eagle on a cactus — look at Mexico's flag!" },
         { "text": "Tenochtitlan stood on an island in Lake Texcoco, linked by causeways and fed by floating gardens called chinampas.", "kid": "The Aztec capital sat on a lake, with floating gardens for growing food!" },
@@ -104,7 +104,7 @@
       "culture": "Celtic (Irish)", "region": "europe", "place": "Ireland",
       "era": "Myths written down c. 700 – 1200 CE", "tags": ["famous", "medieval"], "living": false, "motif": "triskele",
       "palette": { "skyTop": "#355070", "skyBottom": "#B5E48C", "far": "#6D9F71", "mid": "#3E7C59", "near": "#1F4E3D", "ground": "#D9ED92", "groundEdge": "#76C893", "accent": "#F9C74F" },
-      "scenery": { "far": "rolling", "landmarks": ["standingStones", "hut", "pine"], "weather": "rain", "amplitude": 70, "frequency": 1.3 },
+      "scenery": { "far": "rolling", "landmarks": ["standingStones", "hut", "pine"], "weather": "rain", "amplitude": 70, "frequency": 1.3, "biome": "farmland", "props": ["haystack", "fence"] },
       "facts": [
         { "text": "Halloween grew partly from Samhain, a Gaelic festival when the boundary between our world and the Otherworld grew thin.", "kid": "Halloween comes partly from an old Irish festival when spirits were said to wander close by!" },
         { "text": "Newgrange, a passage tomb older than the Great Pyramid, lights up inside at sunrise on the winter solstice.", "kid": "An Irish tomb over 5,000 years old lights up inside on the shortest day of the year!" },
@@ -120,7 +120,7 @@
       "culture": "Hindu", "region": "asia", "place": "India & Nepal",
       "era": "Rigveda c. 1500 – 1200 BCE", "tags": ["famous"], "living": true, "motif": "paisley",
       "palette": { "skyTop": "#7209B7", "skyBottom": "#FFB703", "far": "#E76F51", "mid": "#B5179E", "near": "#560BAD", "ground": "#FFE8D6", "groundEdge": "#FFB4A2", "accent": "#FFD60A" },
-      "scenery": { "far": "peaks", "landmarks": ["shikhara", "palm"], "weather": "fireflies", "amplitude": 65, "frequency": 1.0 },
+      "scenery": { "far": "peaks", "landmarks": ["shikhara", "palm"], "weather": "fireflies", "amplitude": 65, "frequency": 1.0, "biome": "market", "props": ["pot", "produceCrate"] },
       "facts": [
         { "text": "The Rigveda, composed over 3,000 years ago, is among the oldest religious texts still recited today.", "kid": "Some Hindu hymns are over 3,000 years old — and people still sing them today!" },
         { "text": "The Mahabharata has roughly 100,000 verses, making it one of the longest poems ever composed.", "kid": "The Mahabharata is one of the longest poems in the world — about 100,000 verses!" },
@@ -137,7 +137,7 @@
       "culture": "Sumerian & Babylonian", "region": "middleEast", "place": "Iraq (Mesopotamia)",
       "era": "c. 3500 – 539 BCE", "tags": ["ancient"], "living": false, "motif": "rosette",
       "palette": { "skyTop": "#3C096C", "skyBottom": "#FF9E00", "far": "#E85D04", "mid": "#9D0208", "near": "#370617", "ground": "#FFE5B4", "groundEdge": "#E9C46A", "accent": "#4CC9F0" },
-      "scenery": { "far": "dunes", "landmarks": ["ziggurat", "palm"], "weather": "sand", "amplitude": 35, "frequency": 0.7 },
+      "scenery": { "far": "dunes", "landmarks": ["ziggurat", "palm"], "weather": "sand", "amplitude": 35, "frequency": 0.7, "biome": "desert", "props": ["jar", "stoneBlock"] },
       "facts": [
         { "text": "The Epic of Gilgamesh, first written in Mesopotamia about 4,000 years ago, is one of the oldest stories ever recorded.", "kid": "Gilgamesh is one of the oldest written stories in the world — about 4,000 years old!" },
         { "text": "Sumerians developed one of the first writing systems, cuneiform — wedge-shaped marks pressed into wet clay.", "kid": "Sumerians wrote by pressing wedge shapes into clay. It's one of the first kinds of writing!" },
@@ -153,7 +153,7 @@
       "culture": "Yoruba", "region": "africa", "place": "Nigeria & Benin",
       "era": "Ilé-Ifẹ̀ flourished c. 1000 – 1400 CE", "tags": ["lesserKnown"], "living": true, "motif": "adire",
       "palette": { "skyTop": "#00B4D8", "skyBottom": "#FFF3B0", "far": "#90BE6D", "mid": "#43AA8B", "near": "#277DA1", "ground": "#F9DC5C", "groundEdge": "#F3722C", "accent": "#F94144" },
-      "scenery": { "far": "rolling", "landmarks": ["palm", "hut", "baobab"], "weather": "leaves", "amplitude": 55, "frequency": 1.1 },
+      "scenery": { "far": "rolling", "landmarks": ["palm", "hut", "baobab"], "weather": "leaves", "amplitude": 55, "frequency": 1.1, "biome": "market", "props": ["calabash", "basket", "drum"] },
       "facts": [
         { "text": "In Yoruba tradition, Ọbàtálá climbed down a chain from the sky with soil in a snail shell. A hen spread it into land at Ilé-Ifẹ̀.", "kid": "A Yoruba story says the first land was made from soil in a snail shell, spread out by a hen!" },
         { "text": "Ṣàngó, the Òrìṣà of thunder and lightning, is remembered as a powerful king of the old Ọ̀yọ́ empire.", "kid": "Ṣàngó is the Yoruba spirit of thunder — said to have once been a mighty king!" },
@@ -170,7 +170,7 @@
       "culture": "Māori", "region": "oceania", "place": "Aotearoa New Zealand",
       "era": "Settled c. 1250 – 1300 CE", "tags": ["lesserKnown"], "living": true, "motif": "koru",
       "palette": { "skyTop": "#1D3557", "skyBottom": "#A8DADC", "far": "#457B9D", "mid": "#2A6F4E", "near": "#1B4332", "ground": "#E9F5DB", "groundEdge": "#95D5B2", "accent": "#2EC4B6" },
-      "scenery": { "far": "peaks", "landmarks": ["fern", "pine"], "weather": "mist", "amplitude": 85, "frequency": 1.3 },
+      "scenery": { "far": "peaks", "landmarks": ["fern", "pine"], "weather": "mist", "amplitude": 85, "frequency": 1.3, "biome": "forest", "props": ["pou", "log"] },
       "facts": [
         { "text": "Māui fished up the North Island with a magic hook. Its Māori name, Te Ika-a-Māui, means 'the fish of Māui.'", "kid": "The hero Māui fished up a whole island! It's still called 'the fish of Māui.'" },
         { "text": "Ranginui (Sky Father) and Papatūānuku (Earth Mother) held each other tight until their son Tāne pushed them apart to let in light.", "kid": "Sky Father and Earth Mother hugged so tight it was dark — until their son pushed them apart for light!" },
@@ -187,7 +187,7 @@
       "culture": "Chinese", "region": "asia", "place": "China",
       "era": "Myths recorded from c. 400 BCE", "tags": ["famous"], "living": true, "motif": "cloud",
       "palette": { "skyTop": "#0F4C5C", "skyBottom": "#FFCB77", "far": "#8AB17D", "mid": "#2A9D8F", "near": "#264653", "ground": "#F1FAEE", "groundEdge": "#E9C46A", "accent": "#E63946" },
-      "scenery": { "far": "karst", "landmarks": ["pagoda", "pine"], "weather": "lanterns", "amplitude": 75, "frequency": 1.2 },
+      "scenery": { "far": "karst", "landmarks": ["pagoda", "pine"], "weather": "lanterns", "amplitude": 75, "frequency": 1.2, "biome": "market", "props": ["barrel", "stoneLantern", "produceCrate"] },
       "facts": [
         { "text": "In one Chinese creation story, the giant Pangu pushed sky and earth apart. When he died, his body became mountains, rivers and stars.", "kid": "A giant named Pangu pushed the sky up high. His body became mountains and rivers!" },
         { "text": "Chinese dragons aren't villains — they bring rain and good fortune, and were symbols of the emperor.", "kid": "In China, dragons are lucky! They bring rain for the crops." },
@@ -203,7 +203,7 @@
       "culture": "Maya", "region": "americas", "place": "Mexico, Guatemala & Belize",
       "era": "Classic period c. 250 – 900 CE", "tags": ["famous", "ancient"], "living": true, "motif": "mayaStep",
       "palette": { "skyTop": "#006466", "skyBottom": "#F8F3A0", "far": "#4D908E", "mid": "#2D6A4F", "near": "#1B4332", "ground": "#EDE0D4", "groundEdge": "#B08968", "accent": "#FF6D00" },
-      "scenery": { "far": "rolling", "landmarks": ["stepPyramid", "palm", "fern"], "weather": "rain", "amplitude": 60, "frequency": 1.1 },
+      "scenery": { "far": "rolling", "landmarks": ["stepPyramid", "palm", "fern"], "weather": "rain", "amplitude": 60, "frequency": 1.1, "biome": "jungle", "props": ["stela", "log"] },
       "facts": [
         { "text": "The Popol Vuh, the K'iche' Maya book of creation, says the gods finally made people out of maize dough.", "kid": "A Maya story says the first people were made from corn!" },
         { "text": "The Maya used a symbol for zero centuries before the idea reached Europe.", "kid": "The Maya used the number zero long, long before Europe did!" },
@@ -220,7 +220,7 @@
       "culture": "Slavic", "region": "europe", "place": "Eastern Europe",
       "era": "Folktales recorded in the 1800s", "tags": ["lesserKnown", "medieval"], "living": false, "motif": "crossStitch",
       "palette": { "skyTop": "#4361EE", "skyBottom": "#F8EDEB", "far": "#B8C0FF", "mid": "#7678ED", "near": "#3D348B", "ground": "#F8F9FF", "groundEdge": "#C8B6FF", "accent": "#FF5400" },
-      "scenery": { "far": "rolling", "landmarks": ["onionDome", "birch", "hut"], "weather": "snow", "amplitude": 60, "frequency": 1.0 },
+      "scenery": { "far": "rolling", "landmarks": ["onionDome", "birch", "hut"], "weather": "snow", "amplitude": 60, "frequency": 1.0, "biome": "forest", "props": ["haystack", "fence", "log"] },
       "facts": [
         { "text": "Baba Yaga, the forest witch of Slavic tales, lives in a hut that walks on giant chicken legs.", "kid": "Baba Yaga's house walks around on giant chicken legs! Would you knock on that door?" },
         { "text": "Perun, the Slavic god of thunder, was linked with mighty oak trees and battled the serpent-god Veles.", "kid": "Perun, the thunder god, loved big oak trees and threw lightning bolts!" },
@@ -236,7 +236,7 @@
       "culture": "Zulu", "region": "africa", "place": "South Africa",
       "era": "Zulu Kingdom from 1816 CE", "tags": ["lesserKnown"], "living": true, "motif": "beadTriangles",
       "palette": { "skyTop": "#3D5A80", "skyBottom": "#FFB703", "far": "#EE9B00", "mid": "#CA6702", "near": "#6B4226", "ground": "#E9D8A6", "groundEdge": "#BB3E03", "accent": "#0A9396" },
-      "scenery": { "far": "mesas", "landmarks": ["hut", "acacia"], "weather": "none", "amplitude": 70, "frequency": 0.9 },
+      "scenery": { "far": "mesas", "landmarks": ["hut", "acacia"], "weather": "none", "amplitude": 70, "frequency": 0.9, "biome": "savanna", "props": ["pot", "basket", "thornBush"] },
       "facts": [
         { "text": "In Zulu tradition, uNkulunkulu, the first ancestor, emerged from a bed of reeds and brought people and animals with him.", "kid": "A Zulu story says the first person came out of a patch of reeds!" },
         { "text": "Zulu beadwork can carry messages — colors and patterns in an ucu necklace could say 'I love you.'", "kid": "Zulu beads can be secret messages! Colors and patterns can even say 'I love you.'" },
@@ -253,7 +253,7 @@
       "culture": "Inuit", "region": "americas", "place": "Arctic Canada, Greenland & Alaska",
       "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true, "motif": "furTrim", "terrain": "water",
       "palette": { "skyTop": "#03045E", "skyBottom": "#48CAE4", "far": "#90E0EF", "mid": "#00B4D8", "near": "#0077B6", "ground": "#FFFFFF", "groundEdge": "#CAF0F8", "accent": "#80FFDB" },
-      "scenery": { "far": "icebergs", "landmarks": ["inuksuk", "igloo"], "weather": "aurora", "amplitude": 40, "frequency": 0.9 },
+      "scenery": { "far": "icebergs", "landmarks": ["inuksuk", "igloo"], "weather": "aurora", "amplitude": 40, "frequency": 0.9, "biome": "coast", "props": ["boulder"] },
       "facts": [
         { "text": "Sedna, the sea woman, is mother of seals, whales and walruses. Hunters showed respect so she would share them.", "kid": "Sedna lives under the sea and takes care of the seals and whales!" },
         { "text": "In some Inuit stories, the northern lights are spirits playing a ball game across the sky.", "kid": "Some Inuit stories say the northern lights are spirits playing ball in the sky!" },
@@ -270,7 +270,7 @@
       "culture": "Persian", "region": "middleEast", "place": "Iran",
       "era": "Shahnameh completed c. 1010 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "girih",
       "palette": { "skyTop": "#0D3B66", "skyBottom": "#FAF0CA", "far": "#F4D35E", "mid": "#EE964B", "near": "#8D3B72", "ground": "#FFF8E7", "groundEdge": "#F4A259", "accent": "#1B98E0" },
-      "scenery": { "far": "peaks", "landmarks": ["dome", "pine"], "weather": "none", "amplitude": 75, "frequency": 1.0 },
+      "scenery": { "far": "peaks", "landmarks": ["dome", "pine"], "weather": "none", "amplitude": 75, "frequency": 1.0, "biome": "market", "props": ["carpetRoll", "jar"] },
       "facts": [
         { "text": "Ferdowsi spent about 30 years writing the Shahnameh, an epic of some 50,000 couplets that helped preserve the Persian language.", "kid": "A poet spent 30 years writing one giant book of Persian legends — the Shahnameh!" },
         { "text": "The Simurgh, a giant wise bird, raised the hero Zal in her nest on Mount Alborz.", "kid": "A giant kind bird called the Simurgh raised a baby hero in her nest!" },
@@ -286,7 +286,7 @@
       "culture": "Hawaiian", "region": "oceania", "place": "Hawaiʻi",
       "era": "Settled c. 1000 – 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "kapa",
       "palette": { "skyTop": "#5A189A", "skyBottom": "#FF9E00", "far": "#FF6D00", "mid": "#C9184A", "near": "#2D0A31", "ground": "#3A3D5C", "groundEdge": "#EF233C", "accent": "#FFD166" },
-      "scenery": { "far": "volcano", "landmarks": ["palm"], "weather": "embers", "amplitude": 70, "frequency": 1.1 },
+      "scenery": { "far": "volcano", "landmarks": ["palm"], "weather": "embers", "amplitude": 70, "frequency": 1.1, "biome": "volcanic", "props": ["lavaRock", "basket"] },
       "facts": [
         { "text": "Polynesian navigators reached Hawaiʻi without instruments, reading stars, swells and birds. The canoe Hōkūleʻa proved it again in 1976.", "kid": "Long ago, sailors found Hawaiʻi using only the stars, waves and birds — no maps!" },
         { "text": "Māui is said to have snared the sun from the summit of Haleakalā — the 'House of the Sun' — to make days longer.", "kid": "Māui caught the sun from a giant volcano called the 'House of the Sun'!" },
@@ -303,7 +303,7 @@
       "culture": "Inca", "region": "americas", "place": "Peru, Bolivia, Ecuador & Chile",
       "era": "c. 1438 – 1533 CE", "tags": ["famous", "ancient"], "living": true, "motif": "tocapu",
       "palette": { "skyTop": "#00296B", "skyBottom": "#FDC500", "far": "#A3B18A", "mid": "#588157", "near": "#344E41", "ground": "#F2E9E4", "groundEdge": "#C9ADA7", "accent": "#FFD500" },
-      "scenery": { "far": "peaks", "landmarks": ["terraces", "hut"], "weather": "mist", "amplitude": 110, "frequency": 1.4 },
+      "scenery": { "far": "peaks", "landmarks": ["terraces", "hut"], "weather": "mist", "amplitude": 110, "frequency": 1.4, "biome": "mountain", "props": ["masonry", "basket"] },
       "facts": [
         { "text": "The Inca had no written alphabet, but they kept numbers and records on quipu — knotted strings.", "kid": "The Inca kept records with knots on strings instead of writing!" },
         { "text": "Inti Raymi, the Inca Festival of the Sun, is still celebrated in Cusco every June 24th.", "kid": "The Inca Sun Festival is still celebrated every June in Peru!" },
@@ -320,7 +320,7 @@
       "culture": "Finnish", "region": "europe", "place": "Finland & Karelia",
       "era": "Kalevala published 1835", "tags": ["lesserKnown"], "living": false, "motif": "kantele",
       "palette": { "skyTop": "#4EA8DE", "skyBottom": "#FFCDB2", "far": "#98C1D9", "mid": "#3D5A80", "near": "#293241", "ground": "#F1FAEE", "groundEdge": "#98C1D9", "accent": "#EE6C4D" },
-      "scenery": { "far": "rolling", "landmarks": ["pine", "birch", "hut"], "weather": "snow", "amplitude": 55, "frequency": 1.1 },
+      "scenery": { "far": "rolling", "landmarks": ["pine", "birch", "hut"], "weather": "snow", "amplitude": 55, "frequency": 1.1, "biome": "forest", "props": ["log", "fence"] },
       "facts": [
         { "text": "Elias Lönnrot traveled thousands of kilometers collecting folk songs, publishing them as the Kalevala in 1835.", "kid": "A doctor traveled across Finland collecting old songs and turned them into one epic book!" },
         { "text": "Väinämöinen, the wise old singer, built a kantele harp from the jawbone of a giant pike.", "kid": "The wise hero Väinämöinen made a harp out of a giant fish's jawbone!" },
@@ -336,7 +336,7 @@
       "culture": "Akan (Asante)", "region": "africa", "place": "Ghana & Côte d'Ivoire",
       "era": "Asante Empire from c. 1701 CE", "tags": ["lesserKnown"], "living": true, "motif": "kente",
       "palette": { "skyTop": "#007F5F", "skyBottom": "#EEEF20", "far": "#80B918", "mid": "#2B9348", "near": "#1B4332", "ground": "#FFD166", "groundEdge": "#E85D04", "accent": "#FFBA08" },
-      "scenery": { "far": "rolling", "landmarks": ["hut", "palm", "baobab"], "weather": "leaves", "amplitude": 60, "frequency": 1.2 },
+      "scenery": { "far": "rolling", "landmarks": ["hut", "palm", "baobab"], "weather": "leaves", "amplitude": 60, "frequency": 1.2, "biome": "jungle", "props": ["drum", "basket"] },
       "facts": [
         { "text": "Anansi the spider bought all the world's stories from the sky god Nyame — so Akan folktales are called Anansesem, 'spider stories.'", "kid": "Anansi the clever spider bought all the stories in the world from the sky god!" },
         { "text": "The Golden Stool is said to have come down from the sky around 1701. It holds the soul of the Asante nation — no one sits on it.", "kid": "The Asante have a Golden Stool from the sky — so special that nobody ever sits on it!" },
@@ -353,7 +353,7 @@
       "culture": "Mongolian", "region": "asia", "place": "Mongolia",
       "era": "Mongol Empire 1206 – 1368 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "ulzii",
       "palette": { "skyTop": "#0077B6", "skyBottom": "#CAF0F8", "far": "#A7C957", "mid": "#6A994E", "near": "#386641", "ground": "#F2E8CF", "groundEdge": "#BC4749", "accent": "#00B4D8" },
-      "scenery": { "far": "rolling", "landmarks": ["yurt", "cairn"], "weather": "leaves", "amplitude": 40, "frequency": 0.7 },
+      "scenery": { "far": "rolling", "landmarks": ["yurt", "cairn"], "weather": "leaves", "amplitude": 40, "frequency": 0.7, "biome": "steppe", "props": ["cartWheel", "haystack"] },
       "facts": [
         { "text": "Many Mongols honored Tengri, the Eternal Blue Sky. Blue silk scarves called khadag are still offered as a sign of respect.", "kid": "Mongolian stories honor the Eternal Blue Sky. People give blue scarves as gifts of respect!" },
         { "text": "Travelers walk around an ovoo, a sacred stone cairn, three times clockwise and add a stone for a safe journey.", "kid": "When you pass a stone pile called an ovoo, walk around it three times and add a stone for luck!" },
@@ -369,7 +369,7 @@
       "culture": "Hittite", "region": "middleEast", "place": "Türkiye (Anatolia)",
       "era": "c. 1650 – 1180 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "hittiteSpiral",
       "palette": { "skyTop": "#264653", "skyBottom": "#E9C46A", "far": "#F4A261", "mid": "#E76F51", "near": "#6D3B2A", "ground": "#F5EBE0", "groundEdge": "#D5BDAF", "accent": "#2A9D8F" },
-      "scenery": { "far": "mesas", "landmarks": ["lionGate", "pine"], "weather": "none", "amplitude": 70, "frequency": 1.0 },
+      "scenery": { "far": "mesas", "landmarks": ["lionGate", "pine"], "weather": "none", "amplitude": 70, "frequency": 1.0, "biome": "mountain", "props": ["stoneBlock", "jar"] },
       "facts": [
         { "text": "Hittite is the oldest written Indo-European language — a distant relative of English, Hindi and Persian.", "kid": "Hittite is the oldest written language in the family that includes English!" },
         { "text": "After the Battle of Kadesh, the Hittites and Egypt signed one of the earliest known peace treaties, around 1259 BCE.", "kid": "The Hittites and Egypt made one of the world's first peace treaties, over 3,000 years ago!" },
@@ -385,7 +385,7 @@
       "culture": "Rapa Nui", "region": "oceania", "place": "Rapa Nui (Easter Island), Chile",
       "era": "Settled c. 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "rongorongo",
       "palette": { "skyTop": "#168AAD", "skyBottom": "#FDFFB6", "far": "#76C893", "mid": "#52B69A", "near": "#1A759F", "ground": "#D8F3DC", "groundEdge": "#99D98C", "accent": "#FF9F1C" },
-      "scenery": { "far": "rolling", "landmarks": ["moai", "palm"], "weather": "none", "amplitude": 60, "frequency": 1.0 },
+      "scenery": { "far": "rolling", "landmarks": ["moai", "palm"], "weather": "none", "amplitude": 60, "frequency": 1.0, "biome": "coast", "props": ["petroglyphStone", "lavaRock"] },
       "facts": [
         { "text": "Nearly 1,000 moai were carved, most from the volcanic rock of the Rano Raraku quarry.", "kid": "People on Rapa Nui carved almost 1,000 giant stone statues called moai!" },
         { "text": "Most moai face inland, watching over villages — they represent honored ancestors.", "kid": "Most moai face away from the sea, watching over their families like guardians!" },
@@ -402,7 +402,7 @@
       "culture": "Taíno", "region": "americas", "place": "Caribbean (Puerto Rico, Hispaniola, Cuba, Jamaica)",
       "era": "c. 1000 – 1500 CE", "tags": ["lesserKnown"], "living": true, "motif": "zemiSpiral",
       "palette": { "skyTop": "#0096C7", "skyBottom": "#FFF1E6", "far": "#48CAE4", "mid": "#2A9D8F", "near": "#1A535C", "ground": "#FFE8B5", "groundEdge": "#FF7D00", "accent": "#F15BB5" },
-      "scenery": { "far": "rolling", "landmarks": ["palm", "hut"], "weather": "rain", "amplitude": 50, "frequency": 1.0 },
+      "scenery": { "far": "rolling", "landmarks": ["palm", "hut"], "weather": "rain", "amplitude": 50, "frequency": 1.0, "biome": "jungle", "props": ["basket", "log"] },
       "facts": [
         { "text": "'Hurricane' comes from the Taíno storm force Juracán. 'Hammock,' 'canoe' and 'barbecue' are Taíno words too.", "kid": "The words hurricane, hammock and canoe all come from the Taíno people!" },
         { "text": "Yúcahu was the Taíno spirit of cassava and the sea. Many cemí carvings have three points like a mountain.", "kid": "Taíno people carved three-pointed stones called cemís for good harvests!" },
@@ -419,7 +419,7 @@
       "culture": "Etruscan", "region": "europe", "place": "Italy (Tuscany)",
       "era": "c. 900 – 27 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "etruscanWave",
       "palette": { "skyTop": "#5E548E", "skyBottom": "#F9DCC4", "far": "#BE95C4", "mid": "#9F86C0", "near": "#231942", "ground": "#FEEAFA", "groundEdge": "#E0B1CB", "accent": "#FFB703" },
-      "scenery": { "far": "rolling", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 65, "frequency": 1.0 },
+      "scenery": { "far": "rolling", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 65, "frequency": 1.0, "biome": "farmland", "props": ["amphora", "column"] },
       "facts": [
         { "text": "The Etruscans ruled much of Italy before Rome rose — and early Rome itself had Etruscan kings.", "kid": "Before Rome was famous, the Etruscans ruled Italy — they even had kings in Rome!" },
         { "text": "Etruscan priests called haruspices read the will of the gods in the livers of sacrificed sheep.", "kid": "Etruscan priests searched for messages from the gods in very unusual places!" },
@@ -435,7 +435,7 @@
       "culture": "Dogon", "region": "africa", "place": "Mali",
       "era": "Cliffs settled from c. 1400s CE", "tags": ["lesserKnown"], "living": true, "motif": "dogonChevron",
       "palette": { "skyTop": "#9D4EDD", "skyBottom": "#FFB627", "far": "#FF9505", "mid": "#E2711D", "near": "#8A3B12", "ground": "#FFD8A8", "groundEdge": "#CC5803", "accent": "#0FA3B1" },
-      "scenery": { "far": "cliffs", "landmarks": ["granary", "baobab"], "weather": "sand", "amplitude": 55, "frequency": 1.0 },
+      "scenery": { "far": "cliffs", "landmarks": ["granary", "baobab"], "weather": "sand", "amplitude": 55, "frequency": 1.0, "biome": "savanna", "props": ["pot", "basket"] },
       "facts": [
         { "text": "The Dogon built villages along the Bandiagara Escarpment, a cliff about 150 km long — now a UNESCO World Heritage Site.", "kid": "The Dogon live along giant cliffs — their villages are a world treasure!" },
         { "text": "Before the Dogon, the Tellem people lived in small dwellings high in the cliffs — some still hold their granaries.", "kid": "Long before, people called the Tellem built tiny homes high up in the cliffs!" },
@@ -452,7 +452,7 @@
       "culture": "Ainu", "region": "asia", "place": "Hokkaido (Japan) & Sakhalin",
       "era": "Recognized as Indigenous by Japan in 2019", "tags": ["lesserKnown"], "living": true, "motif": "ayus",
       "palette": { "skyTop": "#22577A", "skyBottom": "#C7F9CC", "far": "#80ED99", "mid": "#38A3A5", "near": "#22577A", "ground": "#FFFFFF", "groundEdge": "#C7F9CC", "accent": "#E76F51" },
-      "scenery": { "far": "peaks", "landmarks": ["pine", "hut"], "weather": "snow", "amplitude": 70, "frequency": 1.2 },
+      "scenery": { "far": "peaks", "landmarks": ["pine", "hut"], "weather": "snow", "amplitude": 70, "frequency": 1.2, "biome": "forest", "props": ["log", "basket"] },
       "facts": [
         { "text": "Ainu tradition holds that kamuy — gods — visit the human world wearing animal forms, like bears and owls.", "kid": "Ainu stories say gods visit our world dressed up as animals, like bears!" },
         { "text": "Kotan-kor-kamuy, the Blakiston's fish owl, was honored as the god who protects the village.", "kid": "A giant owl was the protector of Ainu villages!" },
@@ -469,7 +469,7 @@
       "culture": "Guaraní", "region": "americas", "place": "Paraguay, Brazil, Argentina & Bolivia",
       "era": "Guaraní is an official language of Paraguay", "tags": ["lesserKnown"], "living": true, "motif": "nanduti",
       "palette": { "skyTop": "#118AB2", "skyBottom": "#FFD166", "far": "#06D6A0", "mid": "#1B9AAA", "near": "#073B4C", "ground": "#EAF4D3", "groundEdge": "#8AC926", "accent": "#EF476F" },
-      "scenery": { "far": "cliffs", "landmarks": ["palm", "fern"], "weather": "fireflies", "amplitude": 65, "frequency": 1.2 },
+      "scenery": { "far": "cliffs", "landmarks": ["palm", "fern"], "weather": "fireflies", "amplitude": 65, "frequency": 1.2, "biome": "jungle", "props": ["log", "thornBush"] },
       "facts": [
         { "text": "Guaraní is an official language of Paraguay alongside Spanish, and most Paraguayans speak it.", "kid": "In Paraguay, most people speak Guaraní — an Indigenous language!" },
         { "text": "'Jaguar' comes from the Tupi-Guaraní word yaguara. 'Piranha' and 'toucan' have Tupi-Guaraní roots too.", "kid": "The words jaguar and toucan come from the Tupi-Guaraní languages!" },
@@ -486,7 +486,7 @@
       "culture": "Filipino (Visayan)", "region": "asia", "place": "Philippines",
       "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true, "motif": "okir", "terrain": "water",
       "palette": { "skyTop": "#10002B", "skyBottom": "#5A189A", "far": "#7B2CBF", "mid": "#9D4EDD", "near": "#240046", "ground": "#E0AAFF", "groundEdge": "#C77DFF", "accent": "#FFD60A" },
-      "scenery": { "far": "karst", "landmarks": ["palm", "hut"], "weather": "fireflies", "amplitude": 50, "frequency": 1.6 },
+      "scenery": { "far": "karst", "landmarks": ["palm", "hut"], "weather": "fireflies", "amplitude": 50, "frequency": 1.6, "biome": "coast", "props": ["boulder"] },
       "facts": [
         { "text": "When the moon vanished in an eclipse, people said the sea serpent Bakunawa had swallowed it — and banged pots to make it spit it out.", "kid": "When the moon vanished, people banged pots so the sea dragon Bakunawa would spit it out!" },
         { "text": "Legend says there were once seven moons, and Bakunawa swallowed six; the moon we see is the last one.", "kid": "A legend says there were once seven moons, and Bakunawa ate six of them!" },
@@ -502,7 +502,7 @@
       "culture": "San", "region": "africa", "place": "Botswana, Namibia & South Africa",
       "era": "Rock art from c. 27,000 years ago", "tags": ["lesserKnown", "ancient"], "living": true, "motif": "rockDots",
       "palette": { "skyTop": "#FF5400", "skyBottom": "#FFE5B4", "far": "#FFBD00", "mid": "#FF8500", "near": "#9E0059", "ground": "#FFF1D0", "groundEdge": "#E85D04", "accent": "#390099" },
-      "scenery": { "far": "mesas", "landmarks": ["acacia", "baobab"], "weather": "none", "amplitude": 45, "frequency": 0.9 },
+      "scenery": { "far": "mesas", "landmarks": ["acacia", "baobab"], "weather": "none", "amplitude": 45, "frequency": 0.9, "biome": "savanna", "props": ["thornBush", "petroglyphStone"] },
       "facts": [
         { "text": "Painted stones found in Namibia's Apollo 11 Cave are around 27,000 years old — some of Africa's oldest known art.", "kid": "Painted stones found in Namibia are about 27,000 years old — some of the oldest art in Africa!" },
         { "text": "In /Xam San stories, /Kaggen the Mantis threw his shoe into the sky, and it became the moon.", "kid": "A trickster mantis threw his shoe into the sky — and it became the moon!" },

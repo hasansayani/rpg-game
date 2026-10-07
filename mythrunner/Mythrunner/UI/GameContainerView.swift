@@ -3,10 +3,14 @@ import SwiftUI
 
 /// Owns the SpriteKit scene for one realm attempt and overlays SwiftUI pause/results UI.
 @MainActor
-final class GameController: ObservableObject {
+final class GameController: ObservableObject, InputTarget {
+    enum MenuCommand { case confirm, back }
+
     let scene: GameScene
     @Published var paused = false
     @Published var result: RunResult?
+    /// Keyboard/gamepad choices on the results screen; GameHost owns the navigation.
+    var onMenuCommand: ((MenuCommand) -> Void)?
 
     init(realm: Realm, model: AppModel) {
         let s = model.settings
@@ -22,6 +26,28 @@ final class GameController: ObservableObject {
             model.progress.record(result)
             self.scene.isPaused = true
             self.result = result
+        }
+        InputRouter.shared.target = self
+    }
+
+    func handle(_ command: InputCommand) {
+        if result != nil {
+            switch command {
+            case .action(pressed: true): onMenuCommand?(.confirm)
+            case .back, .pause: onMenuCommand?(.back)
+            case .action: break
+            }
+        } else if paused {
+            switch command {
+            case .action(pressed: true), .pause, .back: setPaused(false)
+            case .action: break
+            }
+        } else {
+            switch command {
+            case .action(let pressed): pressed ? scene.session.press() : scene.session.release()
+            case .pause: setPaused(true)
+            case .back: break
+            }
         }
     }
 
@@ -88,6 +114,20 @@ private struct GameHost: View {
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
+        .onAppear {
+            let controller = controller
+            controller.onMenuCommand = { [weak controller, realm, model, onNext, onExit, retry] command in
+                guard let result = controller?.result else { return }
+                switch command {
+                case .confirm:
+                    if !result.won { retry?.run() }
+                    else if let next = model.next(after: realm) { onNext(next) }
+                    else { onExit() }
+                case .back:
+                    onExit()
+                }
+            }
+        }
     }
 }
 
@@ -119,6 +159,11 @@ struct PauseMenu: View {
                 Button("Resume", action: onResume).buttonStyle(.borderedProminent)
                 Button("Restart realm", action: onRetry).buttonStyle(.bordered)
                 Button("Back to map", action: onQuit).buttonStyle(.bordered)
+                Text("Keyboard: Space jump · hold to flip · Esc pause\nController: Ⓐ jump · hold to flip · Menu pause")
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .opacity(0.75)
+                    .padding(.top, 6)
             }
             .foregroundStyle(.white)
             .padding(30)

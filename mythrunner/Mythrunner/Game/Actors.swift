@@ -3,33 +3,32 @@ import UIKit
 
 // MARK: - Player
 
-/// The Wayfarer on a sky-board, with a flowing scarf (Alto's signature silhouette cue).
+/// The Wayfarer on foot (or swimming). Picks an animation frame from the runner's state and rotates
+/// the body about its center of mass, so flips and leans match the physics.
 final class PlayerNode: SKNode {
+    private let frames: RunnerFrames
+    /// Pivot at the center of mass; the sprite hangs from it.
+    private let bodyPivot = SKNode()
     private let sprite: SKSpriteNode
-    private let scarf = SKShapeNode()
-    private let scarfStripe = SKShapeNode()
     private let boostTrail: SKEmitterNode
-    private var scarfPoints: [CGPoint] = []
+    private let dust: SKEmitterNode
+    private var stride: CGFloat = 0
+    private var lastTime: TimeInterval = 0
+    private var landTimer: CGFloat = 0
+    private var stumbleTimer: CGFloat = 0
 
-    init(body: RGBA, board: RGBA, scarfColor: RGBA, trim: RGBA, motif: Motif, spark: SKTexture) {
-        sprite = SKSpriteNode(texture: TextureFactory.rider(body: body, board: board, motif: motif, trim: trim))
-        sprite.anchorPoint = CGPoint(x: 0.5, y: 0.07)
+    init(look: RunnerLook, accent: RGBA, dustColor: RGBA, spark: SKTexture) {
+        frames = RunnerFrames(look: look)
+        sprite = SKSpriteNode(texture: frames.run[0])
+        // Anchor the sprite at its hip, which sits at the center of mass.
+        sprite.anchorPoint = CGPoint(x: TextureFactory.runnerHip.x / TextureFactory.runnerCanvas.width,
+                                     y: 1 - TextureFactory.runnerHip.y / TextureFactory.runnerCanvas.height)
         boostTrail = SKEmitterNode()
+        dust = SKEmitterNode()
         super.init()
-
-        scarf.strokeColor = scarfColor.skColor
-        scarf.lineWidth = 5
-        scarf.lineCap = .round
-        scarf.lineJoin = .round
-        scarf.zPosition = -1
-        addChild(scarf)
-        // A thin stripe in the realm's trim color runs down the scarf.
-        scarfStripe.strokeColor = trim.skColor
-        scarfStripe.lineWidth = 1.5
-        scarfStripe.lineCap = .round
-        scarfStripe.zPosition = -0.5
-        addChild(scarfStripe)
-        addChild(sprite)
+        bodyPivot.position = CGPoint(x: 0, y: 20)
+        bodyPivot.addChild(sprite)
+        addChild(bodyPivot)
 
         boostTrail.particleTexture = spark
         boostTrail.particleBirthRate = 0
@@ -39,38 +38,93 @@ final class PlayerNode: SKNode {
         boostTrail.emissionAngle = .pi
         boostTrail.particleAlpha = 0.9
         boostTrail.particleAlphaSpeed = -1.8
-        boostTrail.particleScale = 0.18
+        boostTrail.particleScale = 0.16
         boostTrail.particleScaleSpeed = -0.3
-        boostTrail.particleColor = board.lighter(0.4).skColor
+        boostTrail.particleColor = accent.lighter(0.4).skColor
         boostTrail.particleColorBlendFactor = 1
         boostTrail.particleBlendMode = .add
-        boostTrail.position = CGPoint(x: -20, y: 4)
+        boostTrail.position = CGPoint(x: -12, y: 18)
         addChild(boostTrail)
+
+        // Landing dust: a quick burst from the feet, scaled by impact speed.
+        dust.particleTexture = spark
+        dust.particleBirthRate = 0
+        dust.numParticlesToEmit = 0
+        dust.particleLifetime = 0.45
+        dust.particleSpeed = 70
+        dust.particleSpeedRange = 40
+        dust.emissionAngle = .pi / 2
+        dust.emissionAngleRange = 2.4
+        dust.particleAlpha = 0.7
+        dust.particleAlphaSpeed = -1.6
+        dust.particleScale = 0.22
+        dust.particleScaleSpeed = 0.3
+        dust.particleColor = dustColor.skColor
+        dust.particleColorBlendFactor = 1
+        dust.yAcceleration = -120
+        addChild(dust)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    func setTrailTarget(_ node: SKNode) { boostTrail.targetNode = node }
+    func setTrailTarget(_ node: SKNode) {
+        boostTrail.targetNode = node
+        dust.targetNode = node
+    }
+
+    /// Called on landing; `impact` is the normal speed from the physics.
+    func didLand(impact: Double) {
+        landTimer = 0.12
+        let strength = CGFloat(min(max((impact - 300) / 700, 0), 1))
+        guard strength > 0 else { return }
+        dust.resetSimulation()
+        dust.particleBirthRate = 400
+        dust.numParticlesToEmit = Int(6 + 18 * strength)
+    }
+
+    func didStumble() { stumbleTimer = 0.4 }
 
     func update(runner: RunnerSim, time: TimeInterval) {
+        let dt = CGFloat(lastTime == 0 ? 1.0 / 60 : min(time - lastTime, 0.05))
+        lastTime = time
+        landTimer = max(0, landTimer - dt)
+        stumbleTimer = max(0, stumbleTimer - dt)
+
         position = CGPoint(x: runner.x, y: runner.y)
-        zRotation = CGFloat(runner.angle)
+        bodyPivot.zRotation = CGFloat(runner.angle)
+        let speed = CGFloat(runner.effectiveSpeed)
+
+        let texture: SKTexture
+        if runner.swimming {
+            bodyPivot.position = CGPoint(x: 0, y: 14)
+            stride += dt * (runner.holding ? 14 : 8)
+            texture = frames.swim[Int(stride) % frames.swim.count]
+        } else {
+            bodyPivot.position = CGPoint(x: 0, y: 20)
+            if runner.failed || stumbleTimer > 0 {
+                texture = frames.stumble
+            } else if runner.grounded {
+                if runner.crouchAmount > 0.05 {
+                    texture = frames.crouch
+                } else if landTimer > 0 {
+                    texture = frames.land
+                } else {
+                    // Stride length ~70 pt: the cycle advances with distance, not time.
+                    stride += speed * dt / 70 * CGFloat(frames.run.count)
+                    texture = frames.run[Int(stride) % frames.run.count]
+                }
+            } else if runner.tucked {
+                texture = frames.tuck
+            } else {
+                texture = runner.vy > 0 ? frames.jump : frames.fall
+            }
+        }
+        if sprite.texture !== texture { sprite.texture = texture }
+
         let boosting = runner.boost > 20
         boostTrail.particleBirthRate = boosting ? CGFloat(40 + runner.boost * 0.6) : 0
-        sprite.alpha = runner.invulnerable > 0 && Int(time * 12) % 2 == 0 ? 0.35 : 1
-
-        // Scarf: a short trail of the neck position in local space, waving with speed.
-        let neck = CGPoint(x: 0, y: 40)
-        let speed = CGFloat(runner.effectiveSpeed)
-        scarfPoints = (0..<6).map { i in
-            let t = CGFloat(i)
-            let wave = sin(CGFloat(time) * 14 - t * 0.9) * (2 + t * 0.9)
-            return CGPoint(x: neck.x - t * (5 + speed * 0.012), y: neck.y - t * 1.2 + wave)
-        }
-        let path = CGMutablePath()
-        path.addLines(between: scarfPoints)
-        scarf.path = path
-        scarfStripe.path = path
+        sprite.alpha = runner.invulnerable > 0 && Int(time * 12) % 2 == 0 ? 0.4 : 1
+        if dust.numParticlesToEmit > 0, dust.particleBirthRate > 0, landTimer < 0.06 { dust.particleBirthRate = 0 }
     }
 }
 

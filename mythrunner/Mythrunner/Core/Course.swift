@@ -201,7 +201,7 @@ struct Course {
             (obstacles.map { ($0.x - $0.width / 2, $0.x + $0.width / 2, Optional($0)) }
                 + sortedGaps.map { ($0.start, $0.end, nil) }).sorted { $0.start < $1.start }
         // A tap must clear every obstacle: keep one only if a short hop clears it from a comfortable
-        // window of take-off points (â¥ 50 pt, not one pixel-perfect spot), whether running slow or fast.
+        // window of take-off points (at least 50 pt, not one pixel-perfect spot), whether running slow or fast.
         let hopV = runner.shortJumpVelocity, g = runner.gravity
         func tapClearable(_ o: Obstacle) -> Bool {
             Course.comfortSpeeds(runner).allSatisfy { speed in

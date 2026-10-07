@@ -3,8 +3,8 @@
   "companion": {
     "name": "Lumi",
     "controlsTip": {
-      "text": "Tap to jump. Hold in the air to flip — clean flips give you speed!",
-      "kid": "Tap to jump! Hold your finger down in the air to do a flip!"
+      "text": "Tap for a hop, hold for a big jump — keep holding to flip, let go to land!",
+      "kid": "Tap to hop! Hold for a big jump, and keep holding to flip!"
     },
     "relicTip": {
       "text": "See that glow? Relics carry stories. Grab them!",

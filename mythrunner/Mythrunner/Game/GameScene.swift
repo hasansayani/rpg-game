@@ -187,13 +187,20 @@ final class GameScene: SKScene {
     private func buildActors() {
         // Obstacles (static; created once).
         let rockTex = TextureFactory.rock(color: palette.near.mixed(with: palette.groundEdge, 0.35))
-        for o in session.course.obstacles {
-            let rock = SKSpriteNode(texture: rockTex)
+        let water = session.course.isWater
+        let coralTex = water ? (0..<3).map { TextureFactory.coral(color: [palette.accent, RGBA(hex: "#FF6F91"), palette.mid][$0], seed: $0) } : []
+        for (i, o) in session.course.obstacles.enumerated() {
+            let rock = SKSpriteNode(texture: water ? coralTex[i % 3] : rockTex)
             rock.anchorPoint = CGPoint(x: 0.5, y: 0)
             rock.size = CGSize(width: o.width + 8, height: o.height + 6)
             rock.position = CGPoint(x: o.x, y: session.course.surface(at: o.x) - 6)
             rock.zPosition = 5
             world.addChild(rock)
+        }
+        if water {
+            buildWater()
+            // No sun or aurora underwater: the light comes down in shafts instead.
+            for name in ["sun", "halo", "aurora0", "aurora1", "aurora2"] { skyLayer.childNode(withName: name)?.isHidden = true }
         }
 
         let relicTex = TextureFactory.relic(color: palette.accent)
@@ -209,9 +216,9 @@ final class GameScene: SKScene {
 
         buildInteractables()
 
-        player = PlayerNode(body: RGBA(hex: "#2B2D42"), board: palette.accent,
-                            scarfColor: RGBA(hex: "#FF4D6D"), trim: palette.accent.lighter(0.15),
-                            motif: setup.realm.motif, spark: dot)
+        player = PlayerNode(look: RunnerLook(cloak: RGBA(hex: "#2B2D42"), trim: palette.accent.lighter(0.15),
+                                             motif: setup.realm.motif),
+                            accent: palette.accent, dustColor: palette.ground.mixed(with: palette.groundEdge, 0.5), spark: dot)
         player.zPosition = 10
         player.setTrailTarget(world)
         world.addChild(player)
@@ -238,7 +245,7 @@ final class GameScene: SKScene {
         weakPointNode.run(.repeatForever(.sequence([.scale(to: 1.25, duration: 0.3), .scale(to: 0.9, duration: 0.3)])))
         world.addChild(weakPointNode)
 
-        if let weather = WeatherFactory.make(setup.realm.scenery.weather, palette: palette, dot: dot,
+        if !session.course.isWater, let weather = WeatherFactory.make(setup.realm.scenery.weather, palette: palette, dot: dot,
                                              width: size.width, height: size.height,
                                              scale: setup.tuning.particleScale) {
             weather.targetNode = world
@@ -246,6 +253,102 @@ final class GameScene: SKScene {
             weather.name = "weather"
             cam.addChild(weather)
             weather.advanceSimulationTime(5)
+        }
+    }
+
+    // MARK: Water realms
+
+    private var waterTint: SKSpriteNode?
+    private var waterSurfaceTiles: [SKSpriteNode] = []
+    private var lightShafts: [SKSpriteNode] = []
+
+    /// Underwater look: a tint over everything below the surface, the surface (sea ice or ripples)
+    /// seen from below, swaying light shafts, rising bubbles, and things hanging from the surface.
+    private func buildWater() {
+        let course = session.course
+        let ice = setup.realm.scenery.far == .icebergs
+
+        let tint = SKSpriteNode(texture: TextureFactory.verticalFade(color: palette.near.darker(0.3), topAlpha: 0.25, bottomAlpha: 0.6))
+        tint.anchorPoint = CGPoint(x: 0.5, y: 1)
+        tint.zPosition = 15
+        cam.addChild(tint)
+        waterTint = tint
+
+        let surfaceTex = TextureFactory.waterSurface(ice: ice, tint: palette.skyBottom)
+        for _ in 0..<8 {
+            let s = SKSpriteNode(texture: surfaceTex)
+            s.anchorPoint = CGPoint(x: 0, y: 0)
+            s.zPosition = 16
+            cam.addChild(s)
+            waterSurfaceTiles.append(s)
+        }
+
+        let shaftTex = TextureFactory.lightShaft()
+        for k in 0..<4 {
+            let s = SKSpriteNode(texture: shaftTex)
+            s.anchorPoint = CGPoint(x: 0.5, y: 1)
+            s.blendMode = .add
+            s.alpha = 0.35
+            s.zPosition = 14
+            s.run(.repeatForever(.sequence([.rotate(toAngle: 0.08, duration: 2.5 + Double(k) * 0.4),
+                                            .rotate(toAngle: -0.08, duration: 2.5 + Double(k) * 0.4)])))
+            cam.addChild(s)
+            lightShafts.append(s)
+        }
+
+        let bubbles = SKEmitterNode()
+        bubbles.particleTexture = TextureFactory.image(size: CGSize(width: 16, height: 16)) { ctx in
+            ctx.setStrokeColor(UIColor.white.withAlphaComponent(0.85).cgColor)
+            ctx.setLineWidth(1.5)
+            ctx.strokeEllipse(in: CGRect(x: 2, y: 2, width: 12, height: 12))
+        }
+        bubbles.particleBirthRate = 10 * CGFloat(setup.tuning.particleScale)
+        bubbles.particleLifetime = 6
+        bubbles.particlePositionRange = CGVector(dx: size.width * 1.4, dy: 10)
+        bubbles.position = CGPoint(x: size.width * 0.2, y: -size.height / 2)
+        bubbles.emissionAngle = .pi / 2
+        bubbles.emissionAngleRange = 0.3
+        bubbles.particleSpeed = 60
+        bubbles.particleSpeedRange = 30
+        bubbles.particleScale = 0.6
+        bubbles.particleScaleRange = 0.4
+        bubbles.particleAlpha = 0.8
+        bubbles.xAcceleration = -10
+        bubbles.targetNode = world
+        bubbles.zPosition = 20
+        bubbles.name = "weather"
+        cam.addChild(bubbles)
+        bubbles.advanceSimulationTime(5)
+
+        // Hanging hazards: icicles under sea ice, drifting jellyfish in open sea.
+        let hangTex = ice ? TextureFactory.icicle() : TextureFactory.jellyfish(color: palette.accent.mixed(with: RGBA(hex: "#C77DFF"), 0.5))
+        for h in course.hangers {
+            let n = SKSpriteNode(texture: hangTex)
+            n.anchorPoint = CGPoint(x: 0.5, y: 1)
+            n.size = CGSize(width: h.width + 6, height: h.length + 4)
+            n.position = CGPoint(x: h.x, y: course.waterSurface + 2)
+            n.zPosition = 5
+            if !ice {
+                n.run(.repeatForever(.sequence([.scaleY(to: 0.92, duration: 0.7), .scaleY(to: 1.0, duration: 0.7)])))
+            }
+            world.addChild(n)
+        }
+    }
+
+    private func updateWater(time: TimeInterval) {
+        guard let tint = waterTint else { return }
+        // Screen-space y of the water surface (camera children are centered on the screen).
+        let surfaceY = CGFloat(session.course.waterSurface) - cam.position.y
+        tint.size = CGSize(width: size.width + 4, height: max(surfaceY + size.height / 2, 0) + 4)
+        tint.position = CGPoint(x: 0, y: surfaceY)
+        let tile: CGFloat = 256
+        let offset = cam.position.x.truncatingRemainder(dividingBy: tile)
+        for (i, s) in waterSurfaceTiles.enumerated() {
+            s.position = CGPoint(x: -size.width / 2 - offset + CGFloat(i) * tile - tile, y: surfaceY - 6)
+        }
+        for (i, s) in lightShafts.enumerated() {
+            let x = (CGFloat(i) * 260 - cam.position.x * 0.3).truncatingRemainder(dividingBy: size.width + 300)
+            s.position = CGPoint(x: (x < -size.width / 2 - 150 ? x + size.width + 300 : x), y: surfaceY)
         }
     }
 
@@ -386,6 +489,7 @@ final class GameScene: SKScene {
         lumi.follow(player.position, time: currentTime, dt: CGFloat(dt))
         updateCamera(dt: CGFloat(dt))
         updateParallax()
+        updateWater(time: currentTime)
         updateChunks()
         updateGuardian(time: currentTime)
         updateHUD()
@@ -531,6 +635,9 @@ final class GameScene: SKScene {
         for ev in e.runner {
             switch ev {
             case .jumped: haptics.light()
+            case .impact(let v): player.didLand(impact: v)
+            case .stumbled: player.didStumble()
+            case .bounced: haptics.light(); popText("BOUNCE", at: player.position)
             case .launched: popText("LAUNCH!", at: player.position)
             case .landed(let flips) where flips > 0:
                 haptics.success()
@@ -656,10 +763,12 @@ final class GameScene: SKScene {
         case .weakpoint: gx = CGFloat(g.weakPoint?.x ?? r.x + 700) + 120
         }
         let ground = CGFloat(course.surface(at: Double(gx)))
-        let gy = ground + guardianNode.hoverHeight + (g.mode == .chase ? 0 : 20)
+        // Underwater guardians swim mid-water rather than walking the seabed.
+        let swimLift: CGFloat = course.isWater ? 70 : 0
+        let gy = ground + guardianNode.hoverHeight + (g.mode == .chase ? 0 : 20) + swimLift
         guardianNode.position = CGPoint(x: gx, y: gy)
         guardianNode.xScale = g.mode == .chase ? 1 : -1  // face the player
-        guardianNode.animate(time: time) { CGFloat(course.surface(at: Double($0))) }
+        guardianNode.animate(time: time) { CGFloat(course.surface(at: Double($0))) + swimLift }
 
         // Weak point
         if let wp = g.weakPoint {
@@ -701,7 +810,7 @@ final class GameScene: SKScene {
 
     private func updateHUD() {
         let reached = session.activeCheckpoint.map { $0 + 1 } ?? 0
-        checkpointLabel.text = "â \(reached)/\(session.course.checkpoints.count)"
+        checkpointLabel.text = "⚑ \(reached)/\(session.course.checkpoints.count)"
         progressFill.xScale = CGFloat(session.progress)
         progressFill.color = (session.phase == .run ? palette.accent : RGBA(hex: "#FF4D6D")).skColor
         relicLabel.text = "◆ \(session.collected.count)/\(session.course.relics.count)"

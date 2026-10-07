@@ -13,6 +13,9 @@ struct RootView: View {
         let args = UserDefaults.standard
         if let id = args.string(forKey: "previewRealm"), let realm = model.realms.first(where: { $0.id == id }) {
             GameContainerView(realm: realm, onExit: {}, onNext: { _ in })
+        } else if let id = args.string(forKey: "travelPreview"), let realm = model.realms.first(where: { $0.id == id }) {
+            TravelMapView(realms: model.realms, completed: model.progress.completed, from: realm,
+                          to: model.next(after: realm), onDone: {})
         } else if args.bool(forKey: "guardianGallery") {
             GuardianGalleryView()
         } else {

@@ -60,6 +60,11 @@ final class GameScene: SKScene {
     private var banner: SKNode!
     private var vignette: SKSpriteNode?
     private var sky: SkyDirector?
+    // Portal exit (after the guardian is defeated).
+    private var exitPortal: SKNode?
+    private var exitX: CGFloat = 0
+    private var exitDelay: CGFloat = 0.9
+    private var enteredPortal = false
 
     // Cached textures
     private var dot: SKTexture!
@@ -532,7 +537,7 @@ final class GameScene: SKScene {
         handle(events, time: currentTime)
 
         let runner = session.runner
-        player.update(runner: runner, time: currentTime)
+        if exitPortal == nil { player.update(runner: runner, time: currentTime) } else { updatePortalExit(dt: CGFloat(dt)) }
         lumi.follow(player.position, time: currentTime, dt: CGFloat(dt))
         updateCamera(dt: CGFloat(dt))
         updateParallax()
@@ -754,7 +759,7 @@ final class GameScene: SKScene {
                 guardianNode.run(.sequence([.fadeOut(withDuration: 0.8), .hide()]))
                 showBanner(title: "REALM COMPLETE", subtitle: setup.realm.name, hold: 2.5)
                 haptics.success()
-                finishTimer = 2.6
+                startPortalExit()
             case .run: break
             }
         }
@@ -763,6 +768,13 @@ final class GameScene: SKScene {
     // MARK: Camera, parallax, terrain
 
     private func updateCamera(dt: CGFloat) {
+        if exitPortal != nil {
+            // Follow the scripted dash into the portal.
+            let k = min(1, dt * 4)
+            cam.position.x += (player.position.x + size.width * 0.1 - cam.position.x) * k
+            cam.position.y += (max(player.position.y + 50, size.height / 2) - cam.position.y) * k
+            return
+        }
         let r = session.runner
         // Keep the runner left of center; in chase mode slide right so the pursuer is visible.
         let lead: CGFloat = session.phase == .guardian && session.mode == .chase ? -size.width * 0.08 : size.width * 0.18
@@ -796,7 +808,8 @@ final class GameScene: SKScene {
             let tex = TextureFactory.terrainChunk(course: session.course, x0: Double(CGFloat(i) * chunkWidth),
                                                   width: chunkWidth + 2, height: height,
                                                   ground: palette.ground, edge: palette.groundEdge,
-                                                  biome: setup.realm.scenery.resolvedBiome, accent: palette.accent)
+                                                  biome: setup.realm.scenery.resolvedBiome, accent: palette.accent,
+                                                  realmID: setup.realm.id)
             let sprite = SKSpriteNode(texture: tex)
             sprite.anchorPoint = .zero
             sprite.position = CGPoint(x: CGFloat(i) * chunkWidth, y: 0)
@@ -938,4 +951,119 @@ final class Haptics {
     func light() { if enabled { lightGen.impactOccurred(intensity: 0.5) } }
     func heavy() { if enabled { heavyGen.impactOccurred() } }
     func success() { if enabled { notifyGen.notificationOccurred(.success) } }
+}
+
+// MARK: - Portal exit
+
+/// The end of a realm: once the guardian is defeated a portal opens ahead, the hero dashes into it,
+/// spins down into the light, and the portal flares shut. Then the scene reports the result.
+extension GameScene {
+    /// A swirl of light in the realm's colors.
+    static func portalTexture(color: RGBA, inner: RGBA) -> SKTexture {
+        TextureFactory.image(size: CGSize(width: 160, height: 220)) { ctx in
+            let c = CGPoint(x: 80, y: 110)
+            ctx.saveGState()
+            ctx.addEllipse(in: CGRect(x: 8, y: 8, width: 144, height: 204))
+            ctx.clip()
+            TextureFactory.radialGradient(ctx, colors: [RGBA(r: 1, g: 1, b: 1), inner.lighter(0.4), color, color.darker(0.4).withAlpha(0.2)],
+                                          center: c, radius: 104)
+            // Spiral arms.
+            ctx.setStrokeColor(UIColor.white.withAlphaComponent(0.55).cgColor)
+            ctx.setLineWidth(5)
+            ctx.setLineCap(.round)
+            for arm in 0..<4 {
+                let base = CGFloat(arm) / 4 * .pi * 2
+                for s in 0...40 {
+                    let t = CGFloat(s) / 40
+                    let a = base + t * .pi * 2.2
+                    let p = CGPoint(x: c.x + cos(a) * 70 * t, y: c.y + sin(a) * 100 * t)
+                    s == 0 ? ctx.move(to: p) : ctx.addLine(to: p)
+                }
+                ctx.strokePath()
+            }
+            ctx.restoreGState()
+            ctx.setStrokeColor(inner.lighter(0.5).cgColor)
+            ctx.setLineWidth(5)
+            ctx.strokeEllipse(in: CGRect(x: 10, y: 10, width: 140, height: 200))
+        }
+    }
+
+    func startPortalExit() {
+        let portalX = player.position.x + min(size.width * 0.32, 320)
+        let ground = CGFloat(session.course.surface(at: Double(portalX)))
+        let portal = SKNode()
+        portal.position = CGPoint(x: portalX, y: ground + (session.course.isWater ? 70 : 52))
+        portal.zPosition = 9
+        portal.setScale(0.01)
+
+        let tex = GameScene.portalTexture(color: palette.accent, inner: palette.skyBottom)
+        for (i, dir) in [1.0, -1.0].enumerated() {
+            let layer = SKSpriteNode(texture: tex)
+            layer.size = CGSize(width: 80, height: 110)
+            layer.alpha = i == 0 ? 1 : 0.55
+            layer.blendMode = i == 0 ? .alpha : .add
+            layer.run(.repeatForever(.rotate(byAngle: CGFloat(dir) * .pi * 2, duration: i == 0 ? 2.2 : 1.4)))
+            portal.addChild(layer)
+        }
+        let glow = SKSpriteNode(texture: dot)
+        glow.color = palette.accent.lighter(0.3).skColor
+        glow.colorBlendFactor = 1
+        glow.blendMode = .add
+        glow.size = CGSize(width: 200, height: 240)
+        glow.alpha = 0.6
+        glow.run(.repeatForever(.sequence([.fadeAlpha(to: 0.9, duration: 0.5), .fadeAlpha(to: 0.5, duration: 0.5)])))
+        portal.addChild(glow)
+        // Sparks circling the rim.
+        for k in 0..<10 {
+            let s = SKSpriteNode(texture: dot)
+            s.size = CGSize(width: 10, height: 10)
+            s.color = UIColor.white
+            s.colorBlendFactor = 1
+            s.blendMode = .add
+            let a = CGFloat(k) / 10 * .pi * 2
+            s.position = CGPoint(x: cos(a) * 44, y: sin(a) * 60)
+            portal.addChild(s)
+        }
+        world.addChild(portal)
+        portal.run(.sequence([.wait(forDuration: 0.5), .scale(to: 1.15, duration: 0.45), .scale(to: 1, duration: 0.2)]))
+        exitPortal = portal
+        exitX = player.position.x
+        enteredPortal = false
+    }
+
+    func updatePortalExit(dt: CGFloat) {
+        guard let portal = exitPortal, !enteredPortal else { return }
+        // The hero keeps running toward the portal (a short pause first while it opens).
+        exitDelay -= dt
+        guard exitDelay <= 0 else { player.runInPlace(dt: dt, speed: 0); return }
+        let speed: CGFloat = 340
+        exitX += speed * dt
+        let ground = CGFloat(session.course.surface(at: Double(exitX)))
+        player.position = CGPoint(x: exitX, y: session.course.isWater ? player.position.y : ground)
+        player.runInPlace(dt: dt, speed: speed)
+        guard exitX >= portal.position.x - 30 else { return }
+
+        enteredPortal = true
+        haptics.success()
+        // Spin down into the light, then the portal flares and closes.
+        player.run(.group([
+            .move(to: CGPoint(x: portal.position.x, y: portal.position.y - 20), duration: 0.6),
+            .scale(to: 0.05, duration: 0.6),
+            .rotate(byAngle: .pi * 4, duration: 0.6),
+            .sequence([.wait(forDuration: 0.35), .fadeOut(withDuration: 0.25)]),
+        ]))
+        lumi.run(.sequence([.wait(forDuration: 0.2), .move(to: portal.position, duration: 0.5), .fadeOut(withDuration: 0.2)]))
+        portal.run(.sequence([
+            .wait(forDuration: 0.6),
+            .scale(to: 1.6, duration: 0.15),
+            .group([.scale(to: 0.01, duration: 0.45), .fadeOut(withDuration: 0.45)]),
+            .removeFromParent(),
+        ]))
+        let flash = SKSpriteNode(color: .white, size: CGSize(width: size.width + 4, height: size.height + 4))
+        flash.alpha = 0
+        flash.zPosition = 60
+        hud.addChild(flash)
+        flash.run(.sequence([.wait(forDuration: 0.65), .fadeAlpha(to: 0.8, duration: 0.12), .fadeOut(withDuration: 0.6), .removeFromParent()]))
+        finishTimer = 1.6
+    }
 }

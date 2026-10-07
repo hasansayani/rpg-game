@@ -86,6 +86,14 @@ final class PlayerNode: SKNode {
 
     func didStumble() { stumbleTimer = 0.4 }
 
+    /// Plays the run cycle without the physics (used for the scripted dash into the exit portal).
+    func runInPlace(dt: CGFloat, speed: CGFloat) {
+        bodyPivot.zRotation = 0.1
+        stride += speed * dt / 70 * CGFloat(frames.run.count)
+        sprite.texture = frames.run[Int(stride) % frames.run.count]
+        sprite.alpha = 1
+    }
+
     func update(runner: RunnerSim, time: TimeInterval) {
         let dt = CGFloat(lastTime == 0 ? 1.0 / 60 : min(time - lastTime, 0.05))
         lastTime = time

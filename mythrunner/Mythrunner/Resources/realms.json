@@ -21,7 +21,7 @@
   "realms": [
     {
       "id": "greek", "order": 1, "name": "Olympus Heights",
-      "culture": "Ancient Greek", "region": "europe", "place": "Greece",
+      "culture": "Ancient Greek", "region": "europe", "place": "Greece", "coords": [40.1, 22.4],
       "era": "c. 800 BCE – 400 CE", "tags": ["famous", "ancient"], "living": false, "motif": "meander",
       "palette": { "skyTop": "#3A7BD5", "skyBottom": "#FFD6A5", "far": "#8FB3D9", "mid": "#5C8DB8", "near": "#2F5D7C", "ground": "#F2E8CF", "groundEdge": "#C9B48A", "accent": "#FFC857" },
       "scenery": { "far": "peaks", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 60, "frequency": 1.0, "biome": "mountain", "props": ["amphora", "column"] },
@@ -37,7 +37,7 @@
     },
     {
       "id": "egyptian", "order": 2, "name": "Sands of the Two Lands",
-      "culture": "Ancient Egyptian", "region": "africa", "place": "Egypt",
+      "culture": "Ancient Egyptian", "region": "africa", "place": "Egypt", "coords": [25.7, 32.6],
       "era": "c. 3100 – 30 BCE", "tags": ["famous", "ancient"], "living": false, "motif": "lotus",
       "palette": { "skyTop": "#2E4E9E", "skyBottom": "#FFB563", "far": "#E9A15B", "mid": "#C97B3C", "near": "#8C4F2B", "ground": "#F6D7A7", "groundEdge": "#D9A86C", "accent": "#2EC4B6" },
       "scenery": { "far": "dunes", "landmarks": ["pyramid", "palm", "obelisk"], "weather": "sand", "amplitude": 45, "frequency": 0.8, "biome": "desert", "props": ["jar", "stoneBlock"] },
@@ -53,7 +53,7 @@
     },
     {
       "id": "norse", "order": 3, "name": "Nine Worlds Ridge",
-      "culture": "Norse", "region": "europe", "place": "Scandinavia & Iceland",
+      "culture": "Norse", "region": "europe", "place": "Scandinavia & Iceland", "coords": [61.0, 8.5],
       "era": "Viking Age, c. 790 – 1100 CE", "tags": ["famous", "medieval"], "living": false, "motif": "knotwork",
       "palette": { "skyTop": "#0B1D3A", "skyBottom": "#3E7CB1", "far": "#5B7DA8", "mid": "#36507A", "near": "#1E2F4D", "ground": "#EEF4FA", "groundEdge": "#A9C4DE", "accent": "#7CFFCB" },
       "scenery": { "far": "peaks", "landmarks": ["longhouse", "pine", "standingStones"], "weather": "aurora", "amplitude": 90, "frequency": 1.2, "biome": "forest", "props": ["runeStone", "log"] },
@@ -69,7 +69,7 @@
     },
     {
       "id": "japanese", "order": 4, "name": "Torii of the Rising Sun",
-      "culture": "Japanese (Shinto)", "region": "asia", "place": "Japan",
+      "culture": "Japanese (Shinto)", "region": "asia", "place": "Japan", "coords": [35.0, 135.8],
       "era": "Kojiki compiled 712 CE", "tags": ["famous"], "living": true, "motif": "seigaiha",
       "palette": { "skyTop": "#FF9AA2", "skyBottom": "#FFE5D9", "far": "#B5A1C9", "mid": "#8D7AAE", "near": "#5E4B8B", "ground": "#FFF5F7", "groundEdge": "#F4B6C2", "accent": "#E63946" },
       "scenery": { "far": "volcano", "landmarks": ["torii", "pagoda", "pine"], "weather": "petals", "amplitude": 55, "frequency": 1.0, "biome": "forest", "props": ["stoneLantern", "bambooFence"] },
@@ -85,7 +85,7 @@
     },
     {
       "id": "aztec", "order": 5, "name": "Feathered Serpent Causeway",
-      "culture": "Aztec (Mexica)", "region": "americas", "place": "Mexico",
+      "culture": "Aztec (Mexica)", "region": "americas", "place": "Mexico", "coords": [19.4, -99.1],
       "era": "c. 1325 – 1521 CE", "tags": ["famous", "ancient"], "living": false, "motif": "stepFret",
       "palette": { "skyTop": "#0081A7", "skyBottom": "#FDFCDC", "far": "#7FB069", "mid": "#2A9D8F", "near": "#1B5E57", "ground": "#F7E1B5", "groundEdge": "#E07A5F", "accent": "#F4A261" },
       "scenery": { "far": "volcano", "landmarks": ["stepPyramid", "cactus", "palm"], "weather": "none", "amplitude": 50, "frequency": 0.9, "biome": "market", "props": ["carvedStone", "produceCrate", "basket"] },
@@ -101,7 +101,7 @@
     },
     {
       "id": "celtic", "order": 6, "name": "Hills of Samhain",
-      "culture": "Celtic (Irish)", "region": "europe", "place": "Ireland",
+      "culture": "Celtic (Irish)", "region": "europe", "place": "Ireland", "coords": [53.3, -7.7],
       "era": "Myths written down c. 700 – 1200 CE", "tags": ["famous", "medieval"], "living": false, "motif": "triskele",
       "palette": { "skyTop": "#355070", "skyBottom": "#B5E48C", "far": "#6D9F71", "mid": "#3E7C59", "near": "#1F4E3D", "ground": "#D9ED92", "groundEdge": "#76C893", "accent": "#F9C74F" },
       "scenery": { "far": "rolling", "landmarks": ["standingStones", "hut", "pine"], "weather": "rain", "amplitude": 70, "frequency": 1.3, "biome": "farmland", "props": ["haystack", "fence"] },
@@ -117,7 +117,7 @@
     },
     {
       "id": "hindu", "order": 7, "name": "Riverlands of the Vedas",
-      "culture": "Hindu", "region": "asia", "place": "India & Nepal",
+      "culture": "Hindu", "region": "asia", "place": "India & Nepal", "coords": [25.3, 83.0],
       "era": "Rigveda c. 1500 – 1200 BCE", "tags": ["famous"], "living": true, "motif": "paisley",
       "palette": { "skyTop": "#7209B7", "skyBottom": "#FFB703", "far": "#E76F51", "mid": "#B5179E", "near": "#560BAD", "ground": "#FFE8D6", "groundEdge": "#FFB4A2", "accent": "#FFD60A" },
       "scenery": { "far": "peaks", "landmarks": ["shikhara", "palm"], "weather": "fireflies", "amplitude": 65, "frequency": 1.0, "biome": "market", "props": ["pot", "produceCrate"] },
@@ -134,7 +134,7 @@
     },
     {
       "id": "sumerian", "order": 8, "name": "Gates of Uruk",
-      "culture": "Sumerian & Babylonian", "region": "middleEast", "place": "Iraq (Mesopotamia)",
+      "culture": "Sumerian & Babylonian", "region": "middleEast", "place": "Iraq (Mesopotamia)", "coords": [31.3, 45.6],
       "era": "c. 3500 – 539 BCE", "tags": ["ancient"], "living": false, "motif": "rosette",
       "palette": { "skyTop": "#3C096C", "skyBottom": "#FF9E00", "far": "#E85D04", "mid": "#9D0208", "near": "#370617", "ground": "#FFE5B4", "groundEdge": "#E9C46A", "accent": "#4CC9F0" },
       "scenery": { "far": "dunes", "landmarks": ["ziggurat", "palm"], "weather": "sand", "amplitude": 35, "frequency": 0.7, "biome": "desert", "props": ["jar", "stoneBlock"] },
@@ -150,7 +150,7 @@
     },
     {
       "id": "yoruba", "order": 9, "name": "Crown of Ilé-Ifẹ̀",
-      "culture": "Yoruba", "region": "africa", "place": "Nigeria & Benin",
+      "culture": "Yoruba", "region": "africa", "place": "Nigeria & Benin", "coords": [7.5, 4.6],
       "era": "Ilé-Ifẹ̀ flourished c. 1000 – 1400 CE", "tags": ["lesserKnown"], "living": true, "motif": "adire",
       "palette": { "skyTop": "#00B4D8", "skyBottom": "#FFF3B0", "far": "#90BE6D", "mid": "#43AA8B", "near": "#277DA1", "ground": "#F9DC5C", "groundEdge": "#F3722C", "accent": "#F94144" },
       "scenery": { "far": "rolling", "landmarks": ["palm", "hut", "baobab"], "weather": "leaves", "amplitude": 55, "frequency": 1.1, "biome": "market", "props": ["calabash", "basket", "drum"] },
@@ -167,7 +167,7 @@
     },
     {
       "id": "maori", "order": 10, "name": "Fish of Māui",
-      "culture": "Māori", "region": "oceania", "place": "Aotearoa New Zealand",
+      "culture": "Māori", "region": "oceania", "place": "Aotearoa New Zealand", "coords": [-38.7, 176.1],
       "era": "Settled c. 1250 – 1300 CE", "tags": ["lesserKnown"], "living": true, "motif": "koru",
       "palette": { "skyTop": "#1D3557", "skyBottom": "#A8DADC", "far": "#457B9D", "mid": "#2A6F4E", "near": "#1B4332", "ground": "#E9F5DB", "groundEdge": "#95D5B2", "accent": "#2EC4B6" },
       "scenery": { "far": "peaks", "landmarks": ["fern", "pine"], "weather": "mist", "amplitude": 85, "frequency": 1.3, "biome": "forest", "props": ["pou", "log"] },
@@ -184,7 +184,7 @@
     },
     {
       "id": "chinese", "order": 11, "name": "Jade Mountain Path",
-      "culture": "Chinese", "region": "asia", "place": "China",
+      "culture": "Chinese", "region": "asia", "place": "China", "coords": [34.3, 108.9],
       "era": "Myths recorded from c. 400 BCE", "tags": ["famous"], "living": true, "motif": "cloud",
       "palette": { "skyTop": "#0F4C5C", "skyBottom": "#FFCB77", "far": "#8AB17D", "mid": "#2A9D8F", "near": "#264653", "ground": "#F1FAEE", "groundEdge": "#E9C46A", "accent": "#E63946" },
       "scenery": { "far": "karst", "landmarks": ["pagoda", "pine"], "weather": "lanterns", "amplitude": 75, "frequency": 1.2, "biome": "market", "props": ["barrel", "stoneLantern", "produceCrate"] },
@@ -200,7 +200,7 @@
     },
     {
       "id": "maya", "order": 12, "name": "Popol Vuh Canopy",
-      "culture": "Maya", "region": "americas", "place": "Mexico, Guatemala & Belize",
+      "culture": "Maya", "region": "americas", "place": "Mexico, Guatemala & Belize", "coords": [17.2, -89.6],
       "era": "Classic period c. 250 – 900 CE", "tags": ["famous", "ancient"], "living": true, "motif": "mayaStep",
       "palette": { "skyTop": "#006466", "skyBottom": "#F8F3A0", "far": "#4D908E", "mid": "#2D6A4F", "near": "#1B4332", "ground": "#EDE0D4", "groundEdge": "#B08968", "accent": "#FF6D00" },
       "scenery": { "far": "rolling", "landmarks": ["stepPyramid", "palm", "fern"], "weather": "rain", "amplitude": 60, "frequency": 1.1, "biome": "jungle", "props": ["stela", "log"] },
@@ -217,7 +217,7 @@
     },
     {
       "id": "slavic", "order": 13, "name": "Birchwood of Koschei",
-      "culture": "Slavic", "region": "europe", "place": "Eastern Europe",
+      "culture": "Slavic", "region": "europe", "place": "Eastern Europe", "coords": [54.0, 28.0],
       "era": "Folktales recorded in the 1800s", "tags": ["lesserKnown", "medieval"], "living": false, "motif": "crossStitch",
       "palette": { "skyTop": "#4361EE", "skyBottom": "#F8EDEB", "far": "#B8C0FF", "mid": "#7678ED", "near": "#3D348B", "ground": "#F8F9FF", "groundEdge": "#C8B6FF", "accent": "#FF5400" },
       "scenery": { "far": "rolling", "landmarks": ["onionDome", "birch", "hut"], "weather": "snow", "amplitude": 60, "frequency": 1.0, "biome": "forest", "props": ["haystack", "fence", "log"] },
@@ -233,7 +233,7 @@
     },
     {
       "id": "zulu", "order": 14, "name": "Valley of the Storm Serpent",
-      "culture": "Zulu", "region": "africa", "place": "South Africa",
+      "culture": "Zulu", "region": "africa", "place": "South Africa", "coords": [-28.5, 31.0],
       "era": "Zulu Kingdom from 1816 CE", "tags": ["lesserKnown"], "living": true, "motif": "beadTriangles",
       "palette": { "skyTop": "#3D5A80", "skyBottom": "#FFB703", "far": "#EE9B00", "mid": "#CA6702", "near": "#6B4226", "ground": "#E9D8A6", "groundEdge": "#BB3E03", "accent": "#0A9396" },
       "scenery": { "far": "mesas", "landmarks": ["hut", "acacia"], "weather": "none", "amplitude": 70, "frequency": 0.9, "biome": "savanna", "props": ["pot", "basket", "thornBush"] },
@@ -250,7 +250,7 @@
     },
     {
       "id": "inuit", "order": 15, "name": "Sedna's Ice Sea",
-      "culture": "Inuit", "region": "americas", "place": "Arctic Canada, Greenland & Alaska",
+      "culture": "Inuit", "region": "americas", "place": "Arctic Canada, Greenland & Alaska", "coords": [66.0, -70.0],
       "era": "Arctic cultures c. 1000 CE – today", "tags": ["lesserKnown"], "living": true, "motif": "furTrim", "terrain": "water",
       "palette": { "skyTop": "#03045E", "skyBottom": "#48CAE4", "far": "#90E0EF", "mid": "#00B4D8", "near": "#0077B6", "ground": "#FFFFFF", "groundEdge": "#CAF0F8", "accent": "#80FFDB" },
       "scenery": { "far": "icebergs", "landmarks": ["inuksuk", "igloo"], "weather": "aurora", "amplitude": 40, "frequency": 0.9, "biome": "coast", "props": ["boulder"] },
@@ -267,7 +267,7 @@
     },
     {
       "id": "persian", "order": 16, "name": "Ferdowsi's Peaks",
-      "culture": "Persian", "region": "middleEast", "place": "Iran",
+      "culture": "Persian", "region": "middleEast", "place": "Iran", "coords": [32.7, 51.7],
       "era": "Shahnameh completed c. 1010 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "girih",
       "palette": { "skyTop": "#0D3B66", "skyBottom": "#FAF0CA", "far": "#F4D35E", "mid": "#EE964B", "near": "#8D3B72", "ground": "#FFF8E7", "groundEdge": "#F4A259", "accent": "#1B98E0" },
       "scenery": { "far": "peaks", "landmarks": ["dome", "pine"], "weather": "none", "amplitude": 75, "frequency": 1.0, "biome": "market", "props": ["carpetRoll", "jar"] },
@@ -283,7 +283,7 @@
     },
     {
       "id": "hawaiian", "order": 17, "name": "Fire Islands",
-      "culture": "Hawaiian", "region": "oceania", "place": "Hawaiʻi",
+      "culture": "Hawaiian", "region": "oceania", "place": "Hawaiʻi", "coords": [19.4, -155.3],
       "era": "Settled c. 1000 – 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "kapa",
       "palette": { "skyTop": "#5A189A", "skyBottom": "#FF9E00", "far": "#FF6D00", "mid": "#C9184A", "near": "#2D0A31", "ground": "#3A3D5C", "groundEdge": "#EF233C", "accent": "#FFD166" },
       "scenery": { "far": "volcano", "landmarks": ["palm"], "weather": "embers", "amplitude": 70, "frequency": 1.1, "biome": "volcanic", "props": ["lavaRock", "basket"] },
@@ -300,7 +300,7 @@
     },
     {
       "id": "inca", "order": 18, "name": "Sky Roads of the Andes",
-      "culture": "Inca", "region": "americas", "place": "Peru, Bolivia, Ecuador & Chile",
+      "culture": "Inca", "region": "americas", "place": "Peru, Bolivia, Ecuador & Chile", "coords": [-13.5, -72.0],
       "era": "c. 1438 – 1533 CE", "tags": ["famous", "ancient"], "living": true, "motif": "tocapu",
       "palette": { "skyTop": "#00296B", "skyBottom": "#FDC500", "far": "#A3B18A", "mid": "#588157", "near": "#344E41", "ground": "#F2E9E4", "groundEdge": "#C9ADA7", "accent": "#FFD500" },
       "scenery": { "far": "peaks", "landmarks": ["terraces", "hut"], "weather": "mist", "amplitude": 110, "frequency": 1.4, "biome": "mountain", "props": ["masonry", "basket"] },
@@ -317,7 +317,7 @@
     },
     {
       "id": "finnish", "order": 19, "name": "Land of the Kalevala",
-      "culture": "Finnish", "region": "europe", "place": "Finland & Karelia",
+      "culture": "Finnish", "region": "europe", "place": "Finland & Karelia", "coords": [62.0, 25.7],
       "era": "Kalevala published 1835", "tags": ["lesserKnown"], "living": false, "motif": "kantele",
       "palette": { "skyTop": "#4EA8DE", "skyBottom": "#FFCDB2", "far": "#98C1D9", "mid": "#3D5A80", "near": "#293241", "ground": "#F1FAEE", "groundEdge": "#98C1D9", "accent": "#EE6C4D" },
       "scenery": { "far": "rolling", "landmarks": ["pine", "birch", "hut"], "weather": "snow", "amplitude": 55, "frequency": 1.1, "biome": "forest", "props": ["log", "fence"] },
@@ -333,7 +333,7 @@
     },
     {
       "id": "akan", "order": 20, "name": "Anansi's Web Forest",
-      "culture": "Akan (Asante)", "region": "africa", "place": "Ghana & Côte d'Ivoire",
+      "culture": "Akan (Asante)", "region": "africa", "place": "Ghana & Côte d'Ivoire", "coords": [6.7, -1.6],
       "era": "Asante Empire from c. 1701 CE", "tags": ["lesserKnown"], "living": true, "motif": "kente",
       "palette": { "skyTop": "#007F5F", "skyBottom": "#EEEF20", "far": "#80B918", "mid": "#2B9348", "near": "#1B4332", "ground": "#FFD166", "groundEdge": "#E85D04", "accent": "#FFBA08" },
       "scenery": { "far": "rolling", "landmarks": ["hut", "palm", "baobab"], "weather": "leaves", "amplitude": 60, "frequency": 1.2, "biome": "jungle", "props": ["drum", "basket"] },
@@ -350,7 +350,7 @@
     },
     {
       "id": "mongolian", "order": 21, "name": "Eternal Blue Sky Steppe",
-      "culture": "Mongolian", "region": "asia", "place": "Mongolia",
+      "culture": "Mongolian", "region": "asia", "place": "Mongolia", "coords": [47.9, 106.9],
       "era": "Mongol Empire 1206 – 1368 CE", "tags": ["lesserKnown", "medieval"], "living": true, "motif": "ulzii",
       "palette": { "skyTop": "#0077B6", "skyBottom": "#CAF0F8", "far": "#A7C957", "mid": "#6A994E", "near": "#386641", "ground": "#F2E8CF", "groundEdge": "#BC4749", "accent": "#00B4D8" },
       "scenery": { "far": "rolling", "landmarks": ["yurt", "cairn"], "weather": "leaves", "amplitude": 40, "frequency": 0.7, "biome": "steppe", "props": ["cartWheel", "haystack"] },
@@ -366,7 +366,7 @@
     },
     {
       "id": "hittite", "order": 22, "name": "Lion Gate of Hattusa",
-      "culture": "Hittite", "region": "middleEast", "place": "Türkiye (Anatolia)",
+      "culture": "Hittite", "region": "middleEast", "place": "Türkiye (Anatolia)", "coords": [40.0, 34.6],
       "era": "c. 1650 – 1180 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "hittiteSpiral",
       "palette": { "skyTop": "#264653", "skyBottom": "#E9C46A", "far": "#F4A261", "mid": "#E76F51", "near": "#6D3B2A", "ground": "#F5EBE0", "groundEdge": "#D5BDAF", "accent": "#2A9D8F" },
       "scenery": { "far": "mesas", "landmarks": ["lionGate", "pine"], "weather": "none", "amplitude": 70, "frequency": 1.0, "biome": "mountain", "props": ["stoneBlock", "jar"] },
@@ -382,7 +382,7 @@
     },
     {
       "id": "rapanui", "order": 23, "name": "Birdman Isle",
-      "culture": "Rapa Nui", "region": "oceania", "place": "Rapa Nui (Easter Island), Chile",
+      "culture": "Rapa Nui", "region": "oceania", "place": "Rapa Nui (Easter Island), Chile", "coords": [-27.1, -109.4],
       "era": "Settled c. 1200 CE", "tags": ["lesserKnown"], "living": true, "motif": "rongorongo",
       "palette": { "skyTop": "#168AAD", "skyBottom": "#FDFFB6", "far": "#76C893", "mid": "#52B69A", "near": "#1A759F", "ground": "#D8F3DC", "groundEdge": "#99D98C", "accent": "#FF9F1C" },
       "scenery": { "far": "rolling", "landmarks": ["moai", "palm"], "weather": "none", "amplitude": 60, "frequency": 1.0, "biome": "coast", "props": ["petroglyphStone", "lavaRock"] },
@@ -399,7 +399,7 @@
     },
     {
       "id": "taino", "order": 24, "name": "Hurricane Coast",
-      "culture": "Taíno", "region": "americas", "place": "Caribbean (Puerto Rico, Hispaniola, Cuba, Jamaica)",
+      "culture": "Taíno", "region": "americas", "place": "Caribbean (Puerto Rico, Hispaniola, Cuba, Jamaica)", "coords": [18.5, -69.9],
       "era": "c. 1000 – 1500 CE", "tags": ["lesserKnown"], "living": true, "motif": "zemiSpiral",
       "palette": { "skyTop": "#0096C7", "skyBottom": "#FFF1E6", "far": "#48CAE4", "mid": "#2A9D8F", "near": "#1A535C", "ground": "#FFE8B5", "groundEdge": "#FF7D00", "accent": "#F15BB5" },
       "scenery": { "far": "rolling", "landmarks": ["palm", "hut"], "weather": "rain", "amplitude": 50, "frequency": 1.0, "biome": "jungle", "props": ["basket", "log"] },
@@ -416,7 +416,7 @@
     },
     {
       "id": "etruscan", "order": 25, "name": "Hill Towns of Etruria",
-      "culture": "Etruscan", "region": "europe", "place": "Italy (Tuscany)",
+      "culture": "Etruscan", "region": "europe", "place": "Italy (Tuscany)", "coords": [43.0, 11.5],
       "era": "c. 900 – 27 BCE", "tags": ["lesserKnown", "ancient"], "living": false, "motif": "etruscanWave",
       "palette": { "skyTop": "#5E548E", "skyBottom": "#F9DCC4", "far": "#BE95C4", "mid": "#9F86C0", "near": "#231942", "ground": "#FEEAFA", "groundEdge": "#E0B1CB", "accent": "#FFB703" },
       "scenery": { "far": "rolling", "landmarks": ["columns", "pine"], "weather": "leaves", "amplitude": 65, "frequency": 1.0, "biome": "farmland", "props": ["amphora", "column"] },
@@ -432,7 +432,7 @@
     },
     {
       "id": "dogon", "order": 26, "name": "Cliffs of Bandiagara",
-      "culture": "Dogon", "region": "africa", "place": "Mali",
+      "culture": "Dogon", "region": "africa", "place": "Mali", "coords": [14.3, -3.6],
       "era": "Cliffs settled from c. 1400s CE", "tags": ["lesserKnown"], "living": true, "motif": "dogonChevron",
       "palette": { "skyTop": "#9D4EDD", "skyBottom": "#FFB627", "far": "#FF9505", "mid": "#E2711D", "near": "#8A3B12", "ground": "#FFD8A8", "groundEdge": "#CC5803", "accent": "#0FA3B1" },
       "scenery": { "far": "cliffs", "landmarks": ["granary", "baobab"], "weather": "sand", "amplitude": 55, "frequency": 1.0, "biome": "savanna", "props": ["pot", "basket"] },
@@ -449,7 +449,7 @@
     },
     {
       "id": "ainu", "order": 27, "name": "Kamuy Forest",
-      "culture": "Ainu", "region": "asia", "place": "Hokkaido (Japan) & Sakhalin",
+      "culture": "Ainu", "region": "asia", "place": "Hokkaido (Japan) & Sakhalin", "coords": [43.5, 143.0],
       "era": "Recognized as Indigenous by Japan in 2019", "tags": ["lesserKnown"], "living": true, "motif": "ayus",
       "palette": { "skyTop": "#22577A", "skyBottom": "#C7F9CC", "far": "#80ED99", "mid": "#38A3A5", "near": "#22577A", "ground": "#FFFFFF", "groundEdge": "#C7F9CC", "accent": "#E76F51" },
       "scenery": { "far": "peaks", "landmarks": ["pine", "hut"], "weather": "snow", "amplitude": 70, "frequency": 1.2, "biome": "forest", "props": ["log", "basket"] },
@@ -466,7 +466,7 @@
     },
     {
       "id": "guarani", "order": 28, "name": "Seven Monsters Jungle",
-      "culture": "Guaraní", "region": "americas", "place": "Paraguay, Brazil, Argentina & Bolivia",
+      "culture": "Guaraní", "region": "americas", "place": "Paraguay, Brazil, Argentina & Bolivia", "coords": [-25.3, -57.6],
       "era": "Guaraní is an official language of Paraguay", "tags": ["lesserKnown"], "living": true, "motif": "nanduti",
       "palette": { "skyTop": "#118AB2", "skyBottom": "#FFD166", "far": "#06D6A0", "mid": "#1B9AAA", "near": "#073B4C", "ground": "#EAF4D3", "groundEdge": "#8AC926", "accent": "#EF476F" },
       "scenery": { "far": "cliffs", "landmarks": ["palm", "fern"], "weather": "fireflies", "amplitude": 65, "frequency": 1.2, "biome": "jungle", "props": ["log", "thornBush"] },
@@ -483,7 +483,7 @@
     },
     {
       "id": "filipino", "order": 29, "name": "Moon-Eater's Sea",
-      "culture": "Filipino (Visayan)", "region": "asia", "place": "Philippines",
+      "culture": "Filipino (Visayan)", "region": "asia", "place": "Philippines", "coords": [10.3, 123.9],
       "era": "Pre-colonial folklore, before 1521", "tags": ["lesserKnown"], "living": true, "motif": "okir", "terrain": "water",
       "palette": { "skyTop": "#10002B", "skyBottom": "#5A189A", "far": "#7B2CBF", "mid": "#9D4EDD", "near": "#240046", "ground": "#E0AAFF", "groundEdge": "#C77DFF", "accent": "#FFD60A" },
       "scenery": { "far": "karst", "landmarks": ["palm", "hut"], "weather": "fireflies", "amplitude": 50, "frequency": 1.6, "biome": "coast", "props": ["boulder"] },
@@ -499,7 +499,7 @@
     },
     {
       "id": "san", "order": 30, "name": "Painted Rocks of the Kalahari",
-      "culture": "San", "region": "africa", "place": "Botswana, Namibia & South Africa",
+      "culture": "San", "region": "africa", "place": "Botswana, Namibia & South Africa", "coords": [-21.0, 22.0],
       "era": "Rock art from c. 27,000 years ago", "tags": ["lesserKnown", "ancient"], "living": true, "motif": "rockDots",
       "palette": { "skyTop": "#FF5400", "skyBottom": "#FFE5B4", "far": "#FFBD00", "mid": "#FF8500", "near": "#9E0059", "ground": "#FFF1D0", "groundEdge": "#E85D04", "accent": "#390099" },
       "scenery": { "far": "mesas", "landmarks": ["acacia", "baobab"], "weather": "none", "amplitude": 45, "frequency": 0.9, "biome": "savanna", "props": ["thornBush", "petroglyphStone"] },

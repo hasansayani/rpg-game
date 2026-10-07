@@ -62,7 +62,8 @@ enum TextureFactory {
 
     /// One chunk of ground. World x in [x0, x0+width), world y from 0 to `height`.
     static func terrainChunk(course: Course, x0: Double, width: CGFloat, height: CGFloat,
-                             ground: RGBA, edge: RGBA, biome: Biome = .forest, accent: RGBA = RGBA(r: 1, g: 1, b: 1)) -> SKTexture {
+                             ground: RGBA, edge: RGBA, biome: Biome = .forest, accent: RGBA = RGBA(r: 1, g: 1, b: 1),
+                             realmID: String = "") -> SKTexture {
         image(size: CGSize(width: width, height: height)) { ctx in
             let step: CGFloat = 6
             // Build ground polygons, splitting at gaps.
@@ -96,6 +97,11 @@ enum TextureFactory {
                 let minY = seg.map(\.y).min() ?? 0
                 linearGradient(ctx, colors: [ground, ground.mixed(with: edge, 0.55).darker(0.08)],
                                from: CGPoint(x: 0, y: minY), to: CGPoint(x: 0, y: height))
+                // What lies beneath: strata, roots, fossils, caves, lava tubes… (seeded per chunk and run).
+                UndergroundPainter.draw(ctx: ctx, width: width, height: height,
+                                        surface: { lx in course.ground(at: x0 + Double(lx)).map { height - CGFloat($0) } },
+                                        biome: biome, realmID: realmID, water: course.isWater, ground: ground, edge: edge,
+                                        seed: UInt64(bitPattern: Int64(x0)) ^ course.variation ^ 0x0F05_511)
                 ctx.restoreGState()
 
                 // Rim highlight along the surface (the Alto "snow line").

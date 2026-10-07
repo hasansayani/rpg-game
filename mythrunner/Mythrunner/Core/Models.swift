@@ -67,6 +67,10 @@ struct Realm: Codable, Identifiable, Hashable {
     var culture: String
     var region: Region
     var place: String
+    /// Where the realm's culture is centered, as [latitude, longitude] in degrees (for the travel map).
+    var coords: [Double]?
+    var latitude: Double { coords?.first ?? 0 }
+    var longitude: Double { coords?.last ?? 0 }
     var era: String
     var tags: [String]
     var living: Bool

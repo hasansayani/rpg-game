@@ -11,6 +11,8 @@ final class GameController: ObservableObject, InputTarget {
     @Published var result: RunResult?
     /// The runner failed and the game is waiting: continue from the checkpoint, or quit.
     @Published var awaitingContinue = false
+    /// After a win: the travel map plays before the results.
+    @Published var traveling = false
     /// Leave the realm (set by GameHost).
     var onQuit: (() -> Void)?
     /// Keyboard/gamepad choices on the results screen; GameHost owns the navigation.
@@ -32,13 +34,22 @@ final class GameController: ObservableObject, InputTarget {
             model.progress.record(result)
             self.scene.isPaused = true
             self.result = result
-            self.resultShownAt = Date()
+            if result.won {
+                self.traveling = true
+            } else {
+                self.resultShownAt = Date()
+            }
         }
         InputRouter.shared.target = self
     }
 
     func handle(_ command: InputCommand) {
-        if result != nil {
+        if traveling {
+            switch command {
+            case .action(pressed: true), .back, .pause: finishTravel()
+            case .action: break
+            }
+        } else if result != nil {
             // Ignore presses for a moment so mashing jump through the win banner doesn't skip the results.
             guard let shown = resultShownAt, Date().timeIntervalSince(shown) > 0.6 else { return }
             switch command {
@@ -64,6 +75,11 @@ final class GameController: ObservableObject, InputTarget {
             case .back: break
             }
         }
+    }
+
+    func finishTravel() {
+        traveling = false
+        resultShownAt = Date()
     }
 
     func continueRun() {
@@ -134,7 +150,11 @@ private struct GameHost: View {
                           onRetry: { retry?.run() },
                           onQuit: onExit)
             }
-            if let result = controller.result {
+            if controller.result != nil, controller.traveling {
+                TravelMapView(realms: model.realms, completed: model.progress.completed, from: realm,
+                              to: model.next(after: realm), onDone: { controller.finishTravel() })
+                    .transition(.opacity)
+            } else if let result = controller.result {
                 ResultsView(realm: realm, result: result,
                             next: result.won ? model.next(after: realm) : nil,
                             onRetry: { retry?.run() },

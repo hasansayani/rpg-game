@@ -52,6 +52,14 @@ final class ContentTests: XCTestCase {
         XCTAssertTrue(designs.allSatisfy { (1...8).contains($0.heads) })
     }
 
+    func testEveryRealmIsOnTheMap() throws {
+        for realm in try loadCatalog().realms {
+            let c = try XCTUnwrap(realm.coords, realm.id)
+            XCTAssertEqual(c.count, 2, realm.id)
+            XCTAssertTrue((-90...90).contains(realm.latitude) && (-180...180).contains(realm.longitude), realm.id)
+        }
+    }
+
     func testPaletteHexIsValid() throws {
         let catalog = try loadCatalog()
         for realm in catalog.realms {

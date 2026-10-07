@@ -57,6 +57,7 @@ final class GameScene: SKScene {
     private var pauseButton: SKShapeNode!
     private var banner: SKNode!
     private var vignette: SKSpriteNode?
+    private var sky: SkyDirector?
 
     // Cached textures
     private var dot: SKTexture!
@@ -108,6 +109,13 @@ final class GameScene: SKScene {
         buildParallax()
         buildActors()
         buildHUD()
+        sky = SkyDirector(realm: setup.realm, palette: palette, size: size, dot: dot, skyLayer: skyLayer, cam: cam,
+                          sunNodes: ["sun", "halo"].compactMap { skyLayer.childNode(withName: $0) },
+                          water: session.course.isWater, particleScale: setup.tuning.particleScale, seed: setup.variation)
+        #if DEBUG
+        // QA: `-skyPhase 2` starts the run at night.
+        sky?.setPhase(UserDefaults.standard.integer(forKey: "skyPhase"))
+        #endif
         layout()
 
         cam.position = CGPoint(x: CGFloat(session.runner.x) + size.width * 0.18, y: max(CGFloat(session.runner.y) + 40, size.height / 2))
@@ -489,6 +497,7 @@ final class GameScene: SKScene {
         bubble.position = CGPoint(x: 0, y: top - 26)
         banner.position = CGPoint(x: 0, y: h * 0.12)
         vignette?.size = CGSize(width: w, height: h)
+        sky?.layout(size: size)
     }
 
     // MARK: Input
@@ -525,6 +534,7 @@ final class GameScene: SKScene {
         updateCamera(dt: CGFloat(dt))
         updateParallax()
         updateWater(time: currentTime)
+        sky?.update(dt: CGFloat(dt), camX: cam.position.x)
         updateChunks()
         updateGuardian(time: currentTime)
         updateHUD()
@@ -646,6 +656,7 @@ final class GameScene: SKScene {
                 haptics.success()
                 lumi.ping()
                 popText("CHECKPOINT", at: CGPoint(x: n.position.x, y: player.position.y))
+                sky?.advancePhase()
             }
         }
     }

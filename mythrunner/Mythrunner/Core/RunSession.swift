@@ -12,6 +12,8 @@ struct SessionEvents {
     var failed = false
     /// The runner was just put back at a checkpoint (or the guardian encounter restarted).
     var respawned = false
+    /// A failure is now waiting for the player to choose continue or quit (only when autoRespawn is off).
+    var awaitingContinue = false
 
     mutating func clear() {
         runner.removeAll(keepingCapacity: true)
@@ -22,6 +24,7 @@ struct SessionEvents {
         companionLine = nil
         failed = false
         respawned = false
+        awaitingContinue = false
     }
 }
 
@@ -77,6 +80,12 @@ final class RunSession {
     private(set) var activeCheckpoint: Int?
     /// Seconds until the pending respawn (nil when the runner is fine).
     private(set) var respawnTimer: Double?
+    /// When false (the app), a failure waits for `continueFromCheckpoint()` instead of respawning
+    /// on its own, so the player can choose to continue or quit. Bots and tests keep it on.
+    var autoRespawn = true
+    /// True while a failure is waiting for the player's decision.
+    private(set) var awaitingContinue = false
+    private var continueRequested = false
 
     private var nextFact = 0
     private var accumulator: Double = 0
@@ -144,9 +153,23 @@ final class RunSession {
         guard phase == .run || phase == .guardian else { return }
         time += dt
 
+        if continueRequested {
+            continueRequested = false
+            respawn(&events)
+            return
+        }
+        if awaitingContinue { return }
         if let t = respawnTimer {
             respawnTimer = t - dt
-            if t - dt <= 0 { respawn(&events) }
+            if t - dt <= 0 {
+                if autoRespawn {
+                    respawn(&events)
+                } else {
+                    respawnTimer = nil
+                    awaitingContinue = true
+                    events.awaitingContinue = true
+                }
+            }
             return
         }
 
@@ -174,6 +197,13 @@ final class RunSession {
                                             priority: CompanionLine.Priority.tip, expiresAfter: 3))
             }
         }
+    }
+
+    /// The player chose to continue after a failure: respawn on the next tick.
+    func continueFromCheckpoint() {
+        guard awaitingContinue else { return }
+        awaitingContinue = false
+        continueRequested = true
     }
 
     private func respawn(_ events: inout SessionEvents) {

@@ -72,82 +72,164 @@ extension TextureFactory {
     static let runnerHip = CGPoint(x: 28, y: 36)
 
     /// Draws the Wayfarer in `pose`, facing right, hooded, in the realm's motif.
+    /// Drawn at 4× pixel density (the sprite is shown at half its texture size) with natural
+    /// proportions, tapered limbs with rounded joints, shaped shoes and hands, and a profiled face.
     static func runner(_ pose: RunnerPose, look: RunnerLook) -> SKTexture {
-        image(size: runnerCanvas) { ctx in
+        image(size: CGSize(width: runnerCanvas.width * 2, height: runnerCanvas.height * 2)) { ctx in
+            ctx.scaleBy(x: 2, y: 2)
             ctx.setLineCap(.round)
             ctx.setLineJoin(.round)
             let hip = CGPoint(x: runnerHip.x + pose.hip.x, y: runnerHip.y + pose.hip.y)
             let up = CGPoint(x: sin(pose.lean), y: -cos(pose.lean))
             let down = CGPoint(x: -up.x, y: -up.y)
+            let forward = CGPoint(x: cos(pose.lean), y: sin(pose.lean))
             func dir(_ a: CGFloat) -> CGPoint {
-                // Rotate the body's "down" vector forward by `a`.
                 CGPoint(x: down.x * cos(a) + down.y * sin(a), y: -down.x * sin(a) + down.y * cos(a))
             }
-            func offset(_ p: CGPoint, _ d: CGPoint, _ len: CGFloat) -> CGPoint { CGPoint(x: p.x + d.x * len, y: p.y + d.y * len) }
-            let neck = offset(hip, up, 15)
-            let shoulder = offset(neck, down, 2.5)
-            let head = offset(neck, up, 6.5)
+            func off(_ p: CGPoint, _ d: CGPoint, _ len: CGFloat) -> CGPoint { CGPoint(x: p.x + d.x * len, y: p.y + d.y * len) }
+            let outline = RGBA(r: 0.08, g: 0.07, b: 0.1, a: 0.55)
 
-            func limb(_ from: CGPoint, _ a1: CGFloat, _ l1: CGFloat, _ a2: CGFloat, _ l2: CGFloat,
-                      width: CGFloat, color: RGBA, end: RGBA, endSize: CGFloat) {
-                let mid = offset(from, dir(a1), l1)
-                let tip = offset(mid, dir(a1 + a2), l2)
-                ctx.setStrokeColor(color.cgColor)
-                ctx.setLineWidth(width)
-                ctx.move(to: from); ctx.addLine(to: mid); ctx.addLine(to: tip); ctx.strokePath()
-                ctx.setFillColor(end.cgColor)
-                ctx.fillEllipse(in: CGRect(x: tip.x - endSize / 2, y: tip.y - endSize / 2, width: endSize, height: endSize))
+            /// A tapered capsule from `a` (width wa) to `b` (width wb), with a soft outline and a lit edge.
+            func segment(_ a: CGPoint, _ b: CGPoint, _ wa: CGFloat, _ wb: CGFloat, _ color: RGBA) {
+                let dx = b.x - a.x, dy = b.y - a.y
+                let len = max(sqrt(dx * dx + dy * dy), 0.001)
+                let n = CGPoint(x: -dy / len, y: dx / len)
+                func shape(_ grow: CGFloat) -> CGPath {
+                    let p = CGMutablePath()
+                    let ha = wa / 2 + grow, hb = wb / 2 + grow
+                    p.move(to: off(a, n, ha)); p.addLine(to: off(b, n, hb))
+                    p.addLine(to: off(b, n, -hb)); p.addLine(to: off(a, n, -ha)); p.closeSubpath()
+                    p.addEllipse(in: CGRect(x: a.x - ha, y: a.y - ha, width: ha * 2, height: ha * 2))
+                    p.addEllipse(in: CGRect(x: b.x - hb, y: b.y - hb, width: hb * 2, height: hb * 2))
+                    return p
+                }
+                ctx.setFillColor(outline.cgColor); ctx.addPath(shape(0.55)); ctx.fillPath()
+                ctx.setFillColor(color.cgColor); ctx.addPath(shape(0)); ctx.fillPath()
+                // Light from the front-top: a thin highlight along one side.
+                ctx.setStrokeColor(color.lighter(0.28).withAlpha(0.7).cgColor)
+                ctx.setLineWidth(min(wa, wb) * 0.28)
+                ctx.move(to: off(a, n, -wa * 0.22)); ctx.addLine(to: off(b, n, -wb * 0.22)); ctx.strokePath()
             }
-            let far = look.cloak.darker(0.45)
-            // Far limbs (behind the body).
-            limb(shoulder, pose.arms[1].0, 7.5, pose.arms[1].1, 7, width: 3.6, color: far, end: look.skin.darker(0.3), endSize: 3.6)
-            limb(hip, pose.legs[1].0, 10, pose.legs[1].1, 10, width: 4.6, color: far, end: look.boots.darker(0.2), endSize: 5)
 
-            // Tunic: a tapered shape along the torso axis, flaring at the hem, with the motif band.
-            let side = CGPoint(x: -up.y, y: up.x)  // perpendicular to the torso
-            let hem = offset(hip, down, 5)
-            let tunic = UIBezierPath()
-            tunic.move(to: offset(neck, side, 5.5))
-            tunic.addLine(to: offset(hem, side, 8))
-            tunic.addQuadCurve(to: offset(hem, side, -8), controlPoint: offset(offset(hem, down, 2.5), side, 0))
-            tunic.addLine(to: offset(neck, side, -5.5))
-            tunic.close()
+            func leg(_ side: Int, near: Bool) {
+                let (t, k) = pose.legs[side]
+                let knee = off(hip, dir(t), 10.5)
+                let ankle = off(knee, dir(t + k), 10)
+                let pants = near ? look.cloak.darker(0.32) : look.cloak.darker(0.5)
+                segment(hip, knee, 4.4, 3.4, pants)
+                segment(knee, ankle, 3.3, 2.3, pants)
+                // Shoe: heel behind the ankle, toe pointing along the foot (perpendicular to the shin).
+                let shin = dir(t + k)
+                let foot = CGPoint(x: shin.y, y: -shin.x)
+                let boots = near ? look.boots : look.boots.darker(0.2)
+                segment(off(ankle, foot, -1.2), off(ankle, foot, 4.6), 2.9, 2.2, boots)
+                // Ankle wrap in the trim color.
+                ctx.setFillColor(look.trim.withAlpha(near ? 0.9 : 0.6).cgColor)
+                ctx.fillEllipse(in: CGRect(x: ankle.x - 1.6, y: ankle.y - 1.6, width: 3.2, height: 3.2))
+            }
+
+            let neck = off(hip, up, 14)
+            let shoulder = off(neck, down, 2.2)
+            func arm(_ side: Int, near: Bool) {
+                let (u, e) = pose.arms[side]
+                let elbow = off(shoulder, dir(u), 7.2)
+                let wrist = off(elbow, dir(u + e), 6.6)
+                let sleeve = near ? look.cloak.darker(0.05) : look.cloak.darker(0.4)
+                segment(shoulder, elbow, 3.2, 2.6, sleeve)
+                segment(elbow, wrist, 2.5, 1.9, near ? look.cloak.darker(0.12) : sleeve.darker(0.1))
+                let hand = off(wrist, dir(u + e), 1.4)
+                ctx.setFillColor(outline.cgColor)
+                ctx.fillEllipse(in: CGRect(x: hand.x - 1.95, y: hand.y - 1.95, width: 3.9, height: 3.9))
+                ctx.setFillColor((near ? look.skin : look.skin.darker(0.25)).cgColor)
+                ctx.fillEllipse(in: CGRect(x: hand.x - 1.5, y: hand.y - 1.5, width: 3, height: 3))
+            }
+
+            // Far limbs, behind the body.
+            arm(1, near: false)
+            leg(1, near: false)
+
+            // Tunic: broad at the shoulders, narrow at the waist, flaring to a hem.
+            let side = CGPoint(x: -up.y, y: up.x)
+            let waist = off(hip, up, 4)
+            let hem = off(hip, down, 5.5)
+            let tunic = CGMutablePath()
+            tunic.move(to: off(shoulder, side, 4.2))
+            tunic.addQuadCurve(to: off(waist, side, 3.4), control: off(off(shoulder, down, 4), side, 4.6))
+            tunic.addQuadCurve(to: off(hem, side, 6.2), control: off(hip, side, 3.8))
+            tunic.addQuadCurve(to: off(hem, side, -6.2), control: off(off(hem, down, 1.6), side, 0))
+            tunic.addQuadCurve(to: off(waist, side, -3.4), control: off(hip, side, -3.8))
+            tunic.addQuadCurve(to: off(shoulder, side, -4.2), control: off(off(shoulder, down, 4), side, -4.8))
+            tunic.addQuadCurve(to: off(shoulder, side, 4.2), control: off(neck, up, 1))
+            ctx.setFillColor(outline.cgColor)
+            ctx.addPath(tunic); ctx.setLineWidth(1.1); ctx.setStrokeColor(outline.cgColor); ctx.strokePath()
             ctx.saveGState()
-            ctx.addPath(tunic.cgPath); ctx.clip()
-            linearGradient(ctx, colors: [look.cloak.lighter(0.18), look.cloak, look.cloak.darker(0.3)],
-                           from: offset(neck, side, 6), to: offset(hem, side, -8))
-            // Motif band across the hem (drawn in an axis-aligned frame rotated to the torso).
+            ctx.addPath(tunic); ctx.clip()
+            linearGradient(ctx, colors: [look.cloak.lighter(0.22), look.cloak, look.cloak.darker(0.35)],
+                           from: off(neck, forward, 4), to: off(hem, forward, -5))
+            // Folds.
+            ctx.setStrokeColor(look.cloak.darker(0.4).withAlpha(0.5).cgColor)
+            ctx.setLineWidth(0.7)
+            for k in [-2.0, 1.5] as [CGFloat] {
+                ctx.move(to: off(off(hip, up, 1), side, k)); ctx.addLine(to: off(off(hem, down, 1), side, k * 1.4)); ctx.strokePath()
+            }
+            // Motif band along the hem, in the torso's frame.
             ctx.translateBy(x: hem.x, y: hem.y)
             ctx.rotate(by: pose.lean)
-            MotifPainter.band(look.motif, in: CGRect(x: -10, y: -5, width: 20, height: 5), ctx: ctx,
+            MotifPainter.band(look.motif, in: CGRect(x: -8, y: -4.2, width: 16, height: 4.2), ctx: ctx,
                               ink: look.trim, base: look.trim.darker(0.55))
             ctx.restoreGState()
-            // Belt.
-            ctx.setStrokeColor(RGBA(r: 0.42, g: 0.27, b: 0.16).cgColor)
-            ctx.setLineWidth(1.6)
-            let belt = offset(hip, up, 2)
-            ctx.move(to: offset(belt, side, 6)); ctx.addLine(to: offset(belt, side, -6)); ctx.strokePath()
+            // Sash across the chest and a leather belt with a buckle.
+            ctx.setStrokeColor(look.trim.withAlpha(0.9).cgColor)
+            ctx.setLineWidth(1.4)
+            ctx.move(to: off(shoulder, side, -3.4)); ctx.addLine(to: off(waist, side, 3)); ctx.strokePath()
+            ctx.setStrokeColor(RGBA(r: 0.36, g: 0.22, b: 0.13).cgColor)
+            ctx.setLineWidth(1.5)
+            ctx.move(to: off(waist, side, 3.6)); ctx.addLine(to: off(waist, side, -3.6)); ctx.strokePath()
+            ctx.setFillColor(RGBA(r: 0.9, g: 0.75, b: 0.35).cgColor)
+            let buckle = off(waist, forward, 0.4)
+            ctx.fill(CGRect(x: buckle.x - 0.8, y: buckle.y - 0.8, width: 1.6, height: 1.6))
 
             // Near limbs.
-            limb(hip, pose.legs[0].0, 10, pose.legs[0].1, 10, width: 5, color: look.cloak.darker(0.3), end: look.boots, endSize: 5.4)
-            limb(shoulder, pose.arms[0].0, 7.5, pose.arms[0].1, 7, width: 4, color: look.cloak.darker(0.08), end: look.skin, endSize: 3.8)
+            leg(0, near: true)
+            arm(0, near: true)
 
-            // Head and hood (the hood's peak trails behind the head).
-            ctx.setFillColor(look.cloak.darker(0.15).cgColor)
-            ctx.fillEllipse(in: CGRect(x: head.x - 7, y: head.y - 7, width: 14, height: 14))
-            let back = CGPoint(x: -cos(pose.lean), y: -sin(pose.lean))
-            let peakBase1 = offset(head, up, 5), peakBase2 = offset(head, back, 5)
-            ctx.move(to: peakBase1); ctx.addLine(to: offset(offset(head, back, 9), up, 6)); ctx.addLine(to: peakBase2); ctx.fillPath()
-            let face = offset(head, CGPoint(x: cos(pose.lean), y: sin(pose.lean)), 2.2)
+            // Neck, then the head in profile under a draped hood.
+            segment(off(neck, down, 1), off(neck, up, 2.4), 2.4, 2.2, look.skin.darker(0.12))
+            let head = off(neck, up, 5.6)
+            let back = CGPoint(x: -forward.x, y: -forward.y)
+            // Hood: a cowl behind and above the head that drapes down onto the shoulders.
+            let hood = CGMutablePath()
+            hood.move(to: off(off(head, forward, 2.6), up, 4.6))
+            hood.addQuadCurve(to: off(off(head, back, 6), up, 1.5), control: off(off(head, back, 3), up, 6.6))
+            hood.addQuadCurve(to: off(shoulder, back, 3.6), control: off(off(head, back, 7), down, 4))
+            hood.addLine(to: off(shoulder, forward, 1.5))
+            hood.addQuadCurve(to: off(off(head, forward, 2.6), up, 4.6), control: off(off(head, forward, -0.5), down, 1))
+            ctx.setStrokeColor(outline.cgColor); ctx.setLineWidth(1.1)
+            ctx.addPath(hood); ctx.strokePath()
+            ctx.saveGState(); ctx.addPath(hood); ctx.clip()
+            linearGradient(ctx, colors: [look.cloak.lighter(0.12), look.cloak.darker(0.3)], from: off(head, up, 5), to: shoulder)
+            ctx.restoreGState()
+            // Face: skull, jaw, nose and chin in profile.
+            let face = off(head, forward, 1.2)
             ctx.setFillColor(look.skin.cgColor)
-            ctx.fillEllipse(in: CGRect(x: face.x - 4.2, y: face.y - 4.4, width: 8.4, height: 8.8))
-            let eye = offset(face, CGPoint(x: cos(pose.lean), y: sin(pose.lean)), 2)
-            ctx.setFillColor(RGBA(r: 0.1, g: 0.08, b: 0.1).cgColor)
-            ctx.fillEllipse(in: CGRect(x: eye.x - 0.9, y: eye.y - 1.4, width: 1.8, height: 2.2))
-            // A band of trim where the hood meets the tunic.
+            ctx.fillEllipse(in: CGRect(x: face.x - 3.3, y: face.y - 3.7, width: 6.6, height: 7.4))
+            let nose = off(off(face, forward, 3.1), down, 0.2)
+            ctx.move(to: off(nose, up, 1.6)); ctx.addLine(to: off(nose, forward, 1.3)); ctx.addLine(to: off(nose, down, 0.9))
+            ctx.closePath(); ctx.fillPath()
+            ctx.setFillColor(look.skin.darker(0.18).cgColor)
+            ctx.fillEllipse(in: CGRect(x: face.x - 3.3, y: face.y - 0.6, width: 3.2, height: 3.6))   // cheek shadow
+            let eye = off(off(face, forward, 1.5), up, 0.6)
+            ctx.setFillColor(RGBA(r: 0.12, g: 0.09, b: 0.1).cgColor)
+            ctx.fillEllipse(in: CGRect(x: eye.x - 0.55, y: eye.y - 0.75, width: 1.1, height: 1.5))
+            ctx.setStrokeColor(RGBA(r: 0.2, g: 0.13, b: 0.1).cgColor)
+            ctx.setLineWidth(0.5)
+            ctx.move(to: off(off(eye, up, 1.3), back, 0.9)); ctx.addLine(to: off(off(eye, up, 1.5), forward, 1.1)); ctx.strokePath()
+            // Hood rim framing the face, in the trim color.
             ctx.setStrokeColor(look.trim.cgColor)
-            ctx.setLineWidth(2.2)
-            ctx.move(to: offset(neck, side, 4)); ctx.addLine(to: offset(neck, side, -4)); ctx.strokePath()
+            ctx.setLineWidth(1.1)
+            ctx.move(to: off(off(head, forward, 2.4), up, 4.4))
+            ctx.addQuadCurve(to: off(off(head, back, 1.2), down, 3.6), control: off(off(head, back, 2.6), up, 2.2))
+            ctx.strokePath()
         }
     }
 }

@@ -9,6 +9,10 @@ final class GameController: ObservableObject, InputTarget {
     let scene: GameScene
     @Published var paused = false
     @Published var result: RunResult?
+    /// The runner failed and the game is waiting: continue from the checkpoint, or quit.
+    @Published var awaitingContinue = false
+    /// Leave the realm (set by GameHost).
+    var onQuit: (() -> Void)?
     /// Keyboard/gamepad choices on the results screen; GameHost owns the navigation.
     var onMenuCommand: ((MenuCommand) -> Void)?
     private var resultShownAt: Date?
@@ -22,6 +26,7 @@ final class GameController: ObservableObject, InputTarget {
         let size = CGSize(width: max(bounds.width, bounds.height), height: min(bounds.width, bounds.height))
         scene = GameScene(size: size, setup: setup)
         scene.onPause = { [weak self] in self?.setPaused(true) }
+        scene.onAwaitingContinue = { [weak self] in self?.awaitingContinue = true }
         scene.onFinish = { [weak self] result in
             guard let self else { return }
             model.progress.record(result)
@@ -41,6 +46,12 @@ final class GameController: ObservableObject, InputTarget {
             case .back, .pause: onMenuCommand?(.back)
             case .action: break
             }
+        } else if awaitingContinue {
+            switch command {
+            case .action(pressed: true): continueRun()
+            case .back, .pause: onQuit?()
+            case .action: break
+            }
         } else if paused {
             switch command {
             case .action(pressed: true), .pause, .back: setPaused(false)
@@ -53,6 +64,11 @@ final class GameController: ObservableObject, InputTarget {
             case .back: break
             }
         }
+    }
+
+    func continueRun() {
+        awaitingContinue = false
+        scene.session.continueFromCheckpoint()
     }
 
     func setPaused(_ value: Bool) {
@@ -105,6 +121,14 @@ private struct GameHost: View {
                        debugOptions: model.settings.showFPS ? [.showsFPS, .showsNodeCount, .showsDrawCount] : [])
                 .ignoresSafeArea()
 
+            if controller.awaitingContinue {
+                ContinueMenu(retries: controller.scene.session.retries,
+                             checkpoint: controller.scene.session.activeCheckpoint.map { $0 + 1 } ?? 0,
+                             inGuardian: controller.scene.session.phase == .guardian,
+                             onContinue: { controller.continueRun() },
+                             onQuit: onExit)
+                    .transition(.opacity)
+            }
             if controller.paused {
                 PauseMenu(onResume: { controller.setPaused(false) },
                           onRetry: { retry?.run() },
@@ -120,8 +144,10 @@ private struct GameHost: View {
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
+        .animation(.easeInOut(duration: 0.25), value: controller.awaitingContinue)
         .onAppear {
             let controller = controller
+            controller.onQuit = onExit
             controller.onMenuCommand = { [weak controller, realm, model, onNext, onExit, retry] command in
                 guard let result = controller?.result else { return }
                 switch command {

@@ -23,6 +23,8 @@ final class PlayerNode: SKNode {
         // Anchor the sprite at its hip, which sits at the center of mass.
         sprite.anchorPoint = CGPoint(x: TextureFactory.runnerHip.x / TextureFactory.runnerCanvas.width,
                                      y: 1 - TextureFactory.runnerHip.y / TextureFactory.runnerCanvas.height)
+        // Frames are drawn at twice the canvas size for crisp detail; show them at half scale.
+        sprite.setScale(0.5)
         boostTrail = SKEmitterNode()
         dust = SKEmitterNode()
         super.init()

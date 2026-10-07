@@ -17,6 +17,8 @@ final class GameScene: SKScene {
 
     var onFinish: ((RunResult) -> Void)?
     var onPause: (() -> Void)?
+    /// The runner failed and the session is waiting for the player to continue or quit.
+    var onAwaitingContinue: (() -> Void)?
 
     let setup: Setup
     let session: RunSession
@@ -75,6 +77,7 @@ final class GameScene: SKScene {
         self.setup = setup
         session = RunSession(realm: setup.realm, totalRealms: setup.totalRealms, tuning: setup.tuning,
                              mode: setup.mode, companion: setup.companion, variation: setup.variation)
+        session.autoRespawn = false
         palette = ResolvedPalette(palette: setup.realm.palette, guardianHex: setup.realm.guardian.color,
                                   tuning: setup.tuning)
         super.init(size: size)
@@ -668,6 +671,7 @@ final class GameScene: SKScene {
             fade.removeAllActions()
             fade.run(.sequence([.wait(forDuration: 0.35), .fadeAlpha(to: 0.85, duration: 0.45)]))
         }
+        if e.awaitingContinue { onAwaitingContinue?() }
         if e.respawned {
             fade.removeAllActions()
             fade.run(.fadeOut(withDuration: 0.4))

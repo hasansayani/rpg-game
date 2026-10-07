@@ -582,4 +582,35 @@ final class MechanicsTests: XCTestCase {
         for _ in 0..<20 { events += step(r) }
         XCTAssertTrue(events.contains(.jumped), "leaving the ground mid-crouch fires the charged jump")
     }
+
+    /// In the app a failure waits for the player's choice instead of respawning on its own.
+    func testFailureWaitsForContinueWhenAutoRespawnIsOff() throws {
+        let catalog = try catalog()
+        let session = RunSession(realm: catalog.realms[0], totalRealms: 30, tuning: .forBand(.explorer),
+                                 mode: .chase, companion: catalog.companion, variation: 3)
+        session.autoRespawn = false
+        var events = SessionEvents()
+        var sawWait = false
+        // Never jump: the runner fails at the first hazard, then must wait.
+        for _ in 0..<(60 * 60) {
+            events.clear()
+            session.advance(1.0 / 60, into: &events)
+            if events.awaitingContinue { sawWait = true; break }
+            XCTAssertFalse(events.respawned, "no automatic respawn")
+        }
+        XCTAssertTrue(sawWait)
+        XCTAssertTrue(session.awaitingContinue)
+        // Time passes, nothing happens.
+        for _ in 0..<180 {
+            events.clear()
+            session.advance(1.0 / 60, into: &events)
+            XCTAssertFalse(events.respawned)
+        }
+        session.continueFromCheckpoint()
+        events.clear()
+        session.advance(1.0 / 60, into: &events)
+        XCTAssertTrue(events.respawned)
+        XCTAssertFalse(session.awaitingContinue)
+        XCTAssertFalse(session.runner.failed)
+    }
 }

@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
+    @State private var showGallery = false
 
     var body: some View {
         NavigationStack {
@@ -35,11 +36,21 @@ struct SettingsView: View {
 
                 Section("Feel") {
                     Toggle("Haptics", isOn: $model.settings.haptics)
-                    Toggle("Show FPS & draw calls", isOn: $model.settings.showFPS)
                 }
 
-                Section("Prototype") {
-                    Toggle("Unlock all 30 realms", isOn: $model.settings.unlockAll)
+                Section {
+                    Toggle("Debug mode: unlock all realms", isOn: $model.settings.unlockAll)
+                    Toggle("Show FPS & draw calls", isOn: $model.settings.showFPS)
+                    #if DEBUG
+                    Button("Guardian gallery") { showGallery = true }
+                    #endif
+                } header: {
+                    Text("Debug mode")
+                } footer: {
+                    Text("With realms unlocked, tap any realm on the map to play it. Progress still saves normally.")
+                }
+
+                Section("Progress") {
                     Button("Reset progress", role: .destructive) { confirmReset = true }
                 }
             }
@@ -49,6 +60,15 @@ struct SettingsView: View {
                                 titleVisibility: .visible) {
                 Button("Erase", role: .destructive) { model.progress = PlayerProgress() }
             }
+            #if DEBUG
+            .fullScreenCover(isPresented: $showGallery) {
+                GuardianGalleryView()
+                    .environmentObject(model)
+                    .overlay(alignment: .topTrailing) {
+                        Button("Close") { showGallery = false }.buttonStyle(.borderedProminent).padding()
+                    }
+            }
+            #endif
         }
     }
 

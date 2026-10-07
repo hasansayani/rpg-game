@@ -2,6 +2,9 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var model: AppModel
+    /// Splash → loading → (age gate on first launch) → title menu ⇄ realm map.
+    enum Stage { case splash, loading, title, map }
+    @State private var stage: Stage = .splash
 
     var body: some View {
         #if DEBUG
@@ -21,11 +24,24 @@ struct RootView: View {
     }
 
     @ViewBuilder private var mainFlow: some View {
-        if model.settings.age == nil {
-            AgeGateView { age in model.settings.age = age }
-        } else {
-            RealmMapView()
+        Group {
+            switch stage {
+            case .splash:
+                SplashView { stage = .loading }
+            case .loading:
+                LoadingView { stage = .title }
+            case .title:
+                if model.settings.age == nil {
+                    AgeGateView { age in model.settings.age = age }
+                } else {
+                    TitleView { stage = .map }
+                }
+            case .map:
+                RealmMapView(onHome: { stage = .title })
+            }
         }
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.5), value: stage)
     }
 }
 

@@ -3,6 +3,8 @@ import SwiftUI
 /// The journey: 30 realms as a horizontally scrolling trail of cards.
 struct RealmMapView: View {
     @EnvironmentObject var model: AppModel
+    /// Back to the title menu.
+    var onHome: (() -> Void)?
     @State private var playing: Realm?
     @State private var showSettings = false
     @State private var showCodex = false
@@ -62,6 +64,7 @@ struct RealmMapView: View {
                     .font(.subheadline.weight(.semibold)).opacity(0.75)
             }
             Spacer()
+            if let onHome { Button(action: onHome) { Label("Home", systemImage: "house.fill") } }
             Button { showCodex = true } label: { Label("Codex", systemImage: "book.closed.fill") }
             Button { showSettings = true } label: { Label("Settings", systemImage: "gearshape.fill") }
         }

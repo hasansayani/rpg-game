@@ -260,7 +260,7 @@
         { "text": "An inuksuk, a stone figure, can mark a route, a good fishing spot or a place to remember. One is on Nunavut's flag.", "kid": "Inuksuks are stone figures that show travelers the way. One is on a flag!" }
       ],
       "relic": { "name": "Snow Goggles", "text": "Inuit snow goggles, carved from bone, antler or wood with thin slits, protected eyes from snow blindness.", "kid": "Inuit invented snow goggles with tiny slits to protect eyes from bright snow!" },
-      "guardian": { "name": "Qalupalik", "kind": "creature", "shape": "spirit", "color": "#2A9D8F", "suggestedMode": "chase",
+      "guardian": { "name": "Qalupalik", "kind": "creature", "shape": "spirit", "color": "#3E8E5E", "suggestedMode": "chase",
         "design": {"headgear": "hood", "tail": "fish", "aura": "frost", "signature": "amautik"},
         "intro": { "text": "Qalupalik! Parents told of this sea creature so children would stay away from thin ice and the water's edge.", "kid": "Qalupalik is a story that keeps kids safe from thin ice! Stay on solid ground and run!" } },
       "review": "Living culture: stories vary by community. Consult Inuit advisors (e.g. via Inuit Tapiriit Kanatami)."
@@ -361,7 +361,7 @@
       ],
       "relic": { "name": "Khadag Scarf", "text": "A khadag is offered with both hands as a sign of respect at greetings and ceremonies.", "kid": "Give a blue scarf with both hands — it's a big hello of respect!" },
       "guardian": { "name": "The Mangus", "kind": "creature", "shape": "giant", "color": "#6D597A", "suggestedMode": "chase",
-        "design": {"heads": 5, "horns": "ram", "tail": "none", "aura": "dust", "signature": "manyHeads"},
+        "design": {"heads": 5, "horns": "ram", "tail": "none", "aura": "smoke", "signature": "manyHeads"},
         "intro": { "text": "A mangus! These many-headed ogres battle heroes like King Geser in Mongolian epics. Ride like the wind!", "kid": "A many-headed ogre! The hero Geser beat lots of them. Ride like the wind!" } }
     },
     {

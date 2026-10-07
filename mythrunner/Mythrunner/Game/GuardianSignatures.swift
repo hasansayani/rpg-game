@@ -442,6 +442,21 @@ extension GuardianNode {
         serpent.zPosition = 1
         serpent.run(.repeatForever(.rotate(byAngle: -.pi * 2, duration: 2.4)))
         body.addChild(serpent)
+        // The fin-like mane said to run along its back.
+        let fin = sprite(CGSize(width: 150, height: 150)) { [self] ctx, s in
+            ctx.setFillColor(eyeColor.mixed(with: color, 0.4).withAlpha(0.85).cgColor)
+            for k in 0..<12 {
+                let a = CGFloat(k) / 12 * .pi * 1.5
+                let base = CGPoint(x: 75 + cos(a) * 61, y: 75 + sin(a) * 61)
+                let tip = CGPoint(x: 75 + cos(a + 0.08) * 72, y: 75 + sin(a + 0.08) * 72)
+                ctx.move(to: base); ctx.addLine(to: tip)
+                ctx.addLine(to: CGPoint(x: 75 + cos(a + 0.16) * 61, y: 75 + sin(a + 0.16) * 61)); ctx.fillPath()
+            }
+        }
+        fin.position = serpent.position
+        fin.zPosition = 0.9
+        fin.run(.repeatForever(.rotate(byAngle: -.pi * 2, duration: 2.4)))
+        body.addChild(fin)
     }
 
     // MARK: Inuit: the Qalupalik, in an amauti parka, long hair, scaled skin, rising through sea ice.
@@ -480,6 +495,16 @@ extension GuardianNode {
         scales.position = CGPoint(x: 0, y: 50)
         scales.zPosition = 0.4
         body.addChild(scales)
+        // Fins at the elbows and webbed, long-nailed hands.
+        for name in ["armFront", "armBack"] {
+            guard let arm = body.childNode(withName: name) else { continue }
+            let fin = sprite(CGSize(width: 26, height: 18), anchor: CGPoint(x: 0.5, y: 0)) { [self] ctx, s in
+                ctx.setFillColor(color.lighter(0.25).withAlpha(0.8).cgColor)
+                ctx.move(to: CGPoint(x: 0, y: 18)); ctx.addQuadCurve(to: CGPoint(x: 26, y: 18), control: CGPoint(x: 6, y: -6)); ctx.fillPath()
+            }
+            fin.position = CGPoint(x: 30, y: 6)
+            arm.addChild(fin)
+        }
         let ice = sprite(CGSize(width: 180, height: 30), anchor: CGPoint(x: 0.5, y: 0)) { ctx, s in
             ctx.setFillColor(RGBA(r: 0.85, g: 0.95, b: 1).cgColor)
             ctx.move(to: CGPoint(x: 0, y: 30)); ctx.addLine(to: CGPoint(x: 30, y: 8)); ctx.addLine(to: CGPoint(x: 60, y: 30)); ctx.fillPath()
@@ -516,6 +541,22 @@ extension GuardianNode {
         spots.position = CGPoint(x: 0, y: 115)
         spots.zPosition = 0.3
         body.addChild(spots)
+        // A sorcerer of storms: hail and boulders whirl around him, as when he struck down Kay Kavus' army.
+        let storm = SKNode()
+        storm.position = CGPoint(x: 0, y: 140)
+        for k in 0..<6 {
+            let a = CGFloat(k) / 6 * .pi * 2
+            let stone = sprite(CGSize(width: 16, height: 14)) { ctx, s in
+                TextureFactory.radialGradient(ctx, colors: [RGBA(r: 0.8, g: 0.82, b: 0.85), RGBA(r: 0.45, g: 0.47, b: 0.5)],
+                                              center: CGPoint(x: 6, y: 5), radius: 9)
+            }
+            stone.position = CGPoint(x: cos(a) * 110, y: sin(a) * 40)
+            stone.setScale(k % 2 == 0 ? 1 : 0.6)
+            storm.addChild(stone)
+        }
+        storm.run(.repeatForever(.rotate(byAngle: .pi * 2, duration: 3)))
+        storm.zPosition = 1.2
+        body.addChild(storm)
     }
 
     // MARK: Hawaiian: a lava surge trailing Pele's hair (glass threads) under a cooling crust.
@@ -562,6 +603,22 @@ extension GuardianNode {
             f.zRotation = 0.5
             f.zPosition = -0.1
             seg.addChild(f)
+        }
+        // Condor-like feet under the front coils, as on Inca vessels.
+        let talon = TextureFactory.image(size: CGSize(width: 20, height: 18)) { ctx in
+            ctx.setStrokeColor(RGBA(r: 0.95, g: 0.75, b: 0.2).cgColor)
+            ctx.setLineWidth(3); ctx.setLineCap(.round)
+            ctx.move(to: CGPoint(x: 10, y: 0)); ctx.addLine(to: CGPoint(x: 10, y: 10)); ctx.strokePath()
+            for dx in [-7.0, 0.0, 7.0] as [CGFloat] {
+                ctx.move(to: CGPoint(x: 10, y: 10)); ctx.addLine(to: CGPoint(x: 10 + dx, y: 17)); ctx.strokePath()
+            }
+        }
+        for i in [3, 7] where i < segments.count {
+            let t = SKSpriteNode(texture: talon)
+            t.anchorPoint = CGPoint(x: 0.5, y: 1)
+            t.position = CGPoint(x: 0, y: -16)
+            t.zPosition = -0.2
+            segments[i].addChild(t)
         }
         // Gold solar disk on the brow, as on Inca metalwork.
         guard let head = mainHead else { return }
@@ -612,6 +669,37 @@ extension GuardianNode {
         branch.position = CGPoint(x: 0, y: 262)
         branch.zPosition = -1
         body.addChild(branch)
+        // Akan accounts give it long red hair, blood-shot eyes and iron teeth.
+        if let head = mainHead {
+            let hair = sprite(CGSize(width: head.r * 2.6, height: head.r * 3.4), anchor: CGPoint(x: 0.5, y: 0.85)) { ctx, s in
+                ctx.setStrokeColor(RGBA(r: 0.72, g: 0.16, b: 0.12).cgColor)
+                ctx.setLineWidth(2.4)
+                ctx.setLineCap(.round)
+                for k in 0..<9 {
+                    let x = s.width * (0.12 + 0.76 * CGFloat(k) / 8)
+                    ctx.move(to: CGPoint(x: x, y: s.height * 0.12))
+                    ctx.addCurve(to: CGPoint(x: x + CGFloat(k % 3 - 1) * 6, y: s.height),
+                                 control1: CGPoint(x: x - 8, y: s.height * 0.45), control2: CGPoint(x: x + 8, y: s.height * 0.7))
+                    ctx.strokePath()
+                }
+            }
+            hair.zPosition = -0.9
+            hair.run(.repeatForever(.sequence([.rotate(toAngle: 0.06, duration: 0.9), .rotate(toAngle: -0.06, duration: 0.9)])))
+            head.addChild(hair)
+            for dx in [-0.18, 0.32] as [CGFloat] {
+                _ = glow(RGBA(r: 1, g: 0.15, b: 0.1), size: head.r * 0.55, at: CGPoint(x: head.r * dx, y: head.r * 0.1), pulse: true, parent: head).zPosition = 1
+            }
+            let teeth = sprite(CGSize(width: head.r * 0.9, height: head.r * 0.3)) { ctx, s in
+                ctx.setFillColor(RGBA(r: 0.62, g: 0.64, b: 0.68).cgColor)
+                for k in 0..<5 {
+                    let x = CGFloat(k) * s.width / 5
+                    ctx.move(to: CGPoint(x: x, y: 0)); ctx.addLine(to: CGPoint(x: x + s.width / 10, y: s.height)); ctx.addLine(to: CGPoint(x: x + s.width / 5, y: 0)); ctx.fillPath()
+                }
+            }
+            teeth.position = CGPoint(x: head.r * 0.1, y: -head.r * 0.45)
+            teeth.zPosition = 1
+            head.addChild(teeth)
+        }
         for side in [-1.0, 1.0] as [CGFloat] {
             let leg = sprite(CGSize(width: 34, height: 160), anchor: CGPoint(x: 0.5, y: 1)) { [self] ctx, s in
                 ctx.setStrokeColor(color.darker(0.3).cgColor); ctx.setLineWidth(6); ctx.setLineCap(.round)
@@ -645,6 +733,23 @@ extension GuardianNode {
         armor.position = CGPoint(x: 0, y: 128)
         armor.zPosition = 0.4
         body.addChild(armor)
+        // In the üliger epics the mangus rises out of a black vapour.
+        let vapour = SKEmitterNode()
+        vapour.particleTexture = dot
+        vapour.particleBirthRate = 22
+        vapour.particleLifetime = 1.8
+        vapour.particlePositionRange = CGVector(dx: 140, dy: 10)
+        vapour.position = CGPoint(x: 0, y: 4)
+        vapour.emissionAngle = .pi / 2
+        vapour.particleSpeed = 40
+        vapour.particleScale = 0.9
+        vapour.particleScaleSpeed = 0.5
+        vapour.particleColor = RGBA(r: 0.08, g: 0.06, b: 0.1).skColor
+        vapour.particleColorBlendFactor = 1
+        vapour.particleAlpha = 0.6
+        vapour.particleAlphaSpeed = -0.35
+        vapour.zPosition = 1.5
+        body.addChild(vapour)
     }
 
     // MARK: Hittite: Illuyanka, who stole the Storm God's heart and eyes. They glow in its coils.
@@ -816,11 +921,33 @@ extension GuardianNode {
         }
         hoard.zPosition = 1
         body.addChild(hoard)
-        // Fire flickers in each head's eyes.
-        for head in heads {
+        // Fire shoots from each head's eyes, in short bursts.
+        for (k, head) in heads.enumerated() {
             let fire = glow(RGBA(r: 1, g: 0.4, b: 0.1), size: head.r * 0.8, at: CGPoint(x: head.r * 0.15, y: head.r * 0.3), pulse: false, parent: head)
             fire.run(.repeatForever(.sequence([.fadeAlpha(to: 0.3, duration: 0.12), .fadeAlpha(to: 1, duration: 0.18)])))
+            let jet = SKSpriteNode(texture: dot)
+            jet.color = RGBA(r: 1, g: 0.55, b: 0.15).skColor
+            jet.colorBlendFactor = 1
+            jet.blendMode = .add
+            jet.anchorPoint = CGPoint(x: 0, y: 0.5)
+            jet.size = CGSize(width: head.r * 3, height: head.r * 0.5)
+            jet.position = CGPoint(x: head.r * 0.4, y: head.r * 0.3)
+            jet.alpha = 0
+            jet.run(.repeatForever(.sequence([.wait(forDuration: 0.6 + Double(k) * 0.23),
+                                              .fadeAlpha(to: 0.9, duration: 0.06), .fadeOut(withDuration: 0.3)])))
+            head.addChild(jet)
         }
+        // Lord of the caves and keeper of the forest's fruit: a pile of fruit beside the gems.
+        let fruit = sprite(CGSize(width: 70, height: 26), anchor: CGPoint(x: 0.5, y: 0)) { ctx, s in
+            let colors = [RGBA(r: 0.95, g: 0.55, b: 0.1), RGBA(r: 0.85, g: 0.2, b: 0.25), RGBA(r: 0.98, g: 0.8, b: 0.2), RGBA(r: 0.5, g: 0.75, b: 0.2)]
+            for k in 0..<7 {
+                let x = 6 + CGFloat(k) * 9, y = CGFloat(k % 2) * 7 + 6
+                TextureFactory.radialGradient(ctx, colors: [colors[k % 4].lighter(0.4), colors[k % 4]], center: CGPoint(x: x, y: y), radius: 6)
+            }
+        }
+        fruit.position = CGPoint(x: -70, y: 0)
+        fruit.zPosition = 1
+        body.addChild(fruit)
     }
 
     // MARK: Filipino: Bakunawa, the sea serpent that swallows the moon during eclipses.

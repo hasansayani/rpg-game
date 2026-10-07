@@ -95,9 +95,17 @@ struct SplashView: View {
         }
         .onAppear {
             withAnimation(.easeOut(duration: 1.0)) { shown = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) { onDone() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) { finish() }
         }
-        .onTapGesture(perform: onDone)
+        .onTapGesture(perform: finish)
+    }
+
+    @State private var finished = false
+    /// Leaves the splash once, whether by tap or by timer.
+    private func finish() {
+        guard !finished else { return }
+        finished = true
+        onDone()
     }
 }
 

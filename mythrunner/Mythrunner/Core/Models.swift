@@ -70,7 +70,7 @@ struct Realm: Codable, Identifiable, Hashable {
     var era: String
     var tags: [String]
     var living: Bool
-    /// Decorative pattern for the rider's outfit and the guardian's body in this realm.
+    /// Decorative pattern for the runner's outfit and the guardian's body in this realm.
     var motif: Motif
     /// `water` realms are swum through instead of run. Omitted in JSON means land.
     var terrain: Terrain?

@@ -110,6 +110,8 @@ final class RunSession {
 
     var variant: LoreVariant { tuning.loreVariant }
     var gatesPassed: Int { countedGates.count }
+    /// Whether gate `i` has been used on this attempt (gates ahead of a checkpoint reset on respawn).
+    func isGateUsed(_ i: Int) -> Bool { usedGates.contains(i) }
 
     /// Where the runner comes back after a failure in the run section.
     var respawnX: Double { activeCheckpoint.map { course.checkpoints[$0].x } ?? 80 }
@@ -221,7 +223,7 @@ final class RunSession {
 
     private func checkInteractables(_ events: inout SessionEvents) {
         let x = runner.x
-        let riderY = runner.y + 22  // roughly the runner's chest
+        let chestY = runner.y + 22  // roughly the runner's chest
 
         let motes = course.motes
         while moteCursor < motes.count, motes[moteCursor].x < x - 40 { moteCursor += 1 }
@@ -229,7 +231,7 @@ final class RunSession {
         while i < motes.count, motes[i].x < x + 40 {
             let m = motes[i]
             if !takenMotes.contains(i), abs(m.x - x) < 26,
-               abs(riderY - (course.surface(at: m.x) + m.lift)) < 40 {
+               abs(chestY - (course.surface(at: m.x) + m.lift)) < 40 {
                 takenMotes.insert(i)
                 motesCollected += 1
                 events.pickups.append(.mote(i))
@@ -238,7 +240,7 @@ final class RunSession {
         }
 
         for (i, g) in course.gates.enumerated() where !usedGates.contains(i) && abs(g.x - x) < 24 {
-            if abs(riderY - (course.surface(at: g.x) + g.lift)) < 46 {
+            if abs(chestY - (course.surface(at: g.x) + g.lift)) < 46 {
                 usedGates.insert(i)
                 countedGates.insert(i)
                 runner.addBoost(150)

@@ -1,7 +1,7 @@
 import SpriteKit
 import UIKit
 
-/// Textures for the interactive path elements: springboards, spirit gates and heart shrines.
+/// Textures for the interactive path elements: springboards, spirit gates and checkpoint shrines.
 /// Tinted from the realm palette so each realm's pieces feel like part of its world.
 extension TextureFactory {
     /// A carved launch ramp with a glowing rune strip. Anchor at bottom center.
@@ -61,7 +61,7 @@ extension TextureFactory {
         }
     }
 
-    /// A small stone shrine with a heart-shaped flame. Anchor at bottom center.
+    /// A checkpoint shrine: a small stone shrine with a flame (unlit or lit). Anchor at bottom center.
     static func shrine(stone: RGBA, flame: RGBA) -> SKTexture {
         image(size: CGSize(width: 48, height: 64)) { ctx in
             // Plinth and pillar.

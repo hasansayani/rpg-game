@@ -36,7 +36,7 @@ struct AgeTuning: Equatable {
     var checkpointSpacing: Double
     var obstacleScale: Double
     var gapScale: Double
-    /// Max angle (radians) between board and slope that still counts as a clean landing.
+    /// Max angle (radians) between the body and upright (lean) that still counts as a clean landing.
     var landingTolerance: Double
     /// Extra guardian speed over the runner's base speed in chase mode.
     var guardianAggression: Double

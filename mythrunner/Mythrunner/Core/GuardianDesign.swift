@@ -1,6 +1,6 @@
 import Foundation
 
-/// A culture's decorative vocabulary, used on the rider's cloak trim, scarf and board,
+/// A culture's decorative vocabulary, used on the runner's tunic hem and trim,
 /// and as the body pattern on that realm's guardian. Drawn procedurally in Game/MotifPainter.
 enum Motif: String, Codable, CaseIterable {
     case meander        // Greek key

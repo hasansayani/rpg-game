@@ -135,21 +135,6 @@ enum TextureFactory {
         }
     }
 
-    // MARK: Characters
-
-    static func heart(color: RGBA) -> SKTexture {
-        image(size: CGSize(width: 32, height: 28)) { ctx in
-            let p = UIBezierPath()
-            p.move(to: CGPoint(x: 16, y: 27))
-            p.addCurve(to: CGPoint(x: 1, y: 9), controlPoint1: CGPoint(x: 8, y: 21), controlPoint2: CGPoint(x: 1, y: 16))
-            p.addArc(withCenter: CGPoint(x: 8.5, y: 8.5), radius: 7.5, startAngle: .pi, endAngle: 0, clockwise: true)
-            p.addArc(withCenter: CGPoint(x: 23.5, y: 8.5), radius: 7.5, startAngle: .pi, endAngle: 0, clockwise: true)
-            p.addCurve(to: CGPoint(x: 16, y: 27), controlPoint1: CGPoint(x: 31, y: 16), controlPoint2: CGPoint(x: 24, y: 21))
-            ctx.setFillColor(color.cgColor)
-            ctx.addPath(p.cgPath)
-            ctx.fillPath()
-        }
-    }
 
     static func relic(color: RGBA) -> SKTexture {
         image(size: CGSize(width: 44, height: 44)) { ctx in

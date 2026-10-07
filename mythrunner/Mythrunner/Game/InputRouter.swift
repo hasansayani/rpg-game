@@ -37,6 +37,9 @@ final class InputRouter {
         observers.append(center.addObserver(forName: .GCKeyboardDidConnect, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.attachKeyboard() }
         })
+        observers.append(center.addObserver(forName: .GCKeyboardDidDisconnect, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.releaseAll(prefix: "kb-") }
+        })
         observers.append(center.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { [weak self] note in
             guard let pad = note.object as? GCController else { return }
             MainActor.assumeIsolated { self?.attach(pad) }

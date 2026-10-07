@@ -63,7 +63,7 @@ struct AgeGateView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("MYTHRUNNER")
                         .font(.system(size: 40, weight: .heavy, design: .rounded))
-                    Text("Ride through 30 realms of world mythology with Lumi, your spirit guide.")
+                    Text("Run through 30 realms of world mythology with Lumi, your spirit guide.")
                         .font(.title3.weight(.semibold))
                     Text("How old are you?")
                         .font(.title2.weight(.bold))

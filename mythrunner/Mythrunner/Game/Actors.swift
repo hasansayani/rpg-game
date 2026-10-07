@@ -152,7 +152,7 @@ final class CompanionNode: SKNode {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    /// Critically-damped follow so Lumi lags playfully behind the rider.
+    /// Critically-damped follow so Lumi lags playfully behind the runner.
     func follow(_ target: CGPoint, time: TimeInterval, dt: CGFloat) {
         let bob = CGPoint(x: cos(CGFloat(time) * 1.7) * 10, y: sin(CGFloat(time) * 2.3) * 8)
         let goal = CGPoint(x: target.x - 34 + bob.x, y: target.y + 86 + bob.y)

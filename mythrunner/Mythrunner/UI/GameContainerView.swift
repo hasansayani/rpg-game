@@ -11,6 +11,7 @@ final class GameController: ObservableObject, InputTarget {
     @Published var result: RunResult?
     /// Keyboard/gamepad choices on the results screen; GameHost owns the navigation.
     var onMenuCommand: ((MenuCommand) -> Void)?
+    private var resultShownAt: Date?
 
     init(realm: Realm, model: AppModel) {
         let s = model.settings
@@ -26,12 +27,15 @@ final class GameController: ObservableObject, InputTarget {
             model.progress.record(result)
             self.scene.isPaused = true
             self.result = result
+            self.resultShownAt = Date()
         }
         InputRouter.shared.target = self
     }
 
     func handle(_ command: InputCommand) {
         if result != nil {
+            // Ignore presses for a moment so mashing jump through the win banner doesn't skip the results.
+            guard let shown = resultShownAt, Date().timeIntervalSince(shown) > 0.6 else { return }
             switch command {
             case .action(pressed: true): onMenuCommand?(.confirm)
             case .back, .pause: onMenuCommand?(.back)
@@ -54,6 +58,8 @@ final class GameController: ObservableObject, InputTarget {
     func setPaused(_ value: Bool) {
         paused = value
         scene.isPaused = value
+        // A held button can't be released while paused, so let go of it now.
+        if value { scene.session.release() }
         if !value { scene.resetClock() }
     }
 }

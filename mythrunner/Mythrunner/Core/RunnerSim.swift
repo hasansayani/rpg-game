@@ -37,7 +37,6 @@ struct RunnerConfig {
     var launchVelocity: Double = 900
     /// Grace period after respawning at a checkpoint.
     var respawnGrace: Double = 0.8
-    var crashStunTime: Double = 0.7
     var stumbleTime: Double = 0.4
     /// Landing on an obstacle: fraction of downward speed returned, plus a small upward kick.
     var bounceRestitution: Double = 0.55
@@ -102,7 +101,6 @@ final class RunnerSim {
     /// Set when the runner fails (hit, crash, fall). The session respawns it at a checkpoint.
     private(set) var failed = false
     private(set) var invulnerable: Double = 0
-    private(set) var stunned: Double = 0
     private(set) var stumbling: Double = 0
     private(set) var totalFlips = 0
     private(set) var bestCombo = 0
@@ -119,10 +117,11 @@ final class RunnerSim {
     private var angularMomentum: Double = 0
     private var strokeTimer: Double = 0
     private var strokePending = false
+    /// Set for the step in which the runner bounced off an obstacle top.
+    private var bouncedThisStep = false
 
     var swimming: Bool { course.isWater }
     var effectiveSpeed: Double {
-        if stunned > 0 { return 0 }
         let v = min(speed + boost, config.maxSpeed)
         return stumbling > 0 ? v * 0.65 : v
     }
@@ -173,12 +172,6 @@ final class RunnerSim {
             return
         }
 
-        if stunned > 0 {
-            stunned -= dt
-            if stunned <= 0 { speed = config.baseSpeed * 0.6 }
-            if grounded, let g = course.ground(at: x) { y = g }
-            return
-        }
 
         let prevX = x, prevY = y
         if grounded {
@@ -191,7 +184,8 @@ final class RunnerSim {
             stepAir(dt, prevX: prevX, prevY: prevY, events: &events)
         }
 
-        if hazardsEnabled { checkObstacles(&events) }
+        if hazardsEnabled, !bouncedThisStep { checkObstacles(&events) }
+        bouncedThisStep = false
     }
 
     /// Lean of the body for a given slope: runners stay mostly upright, leaning a little into hills.
@@ -199,6 +193,12 @@ final class RunnerSim {
 
     private func stepGrounded(_ dt: Double, events: inout [RunnerEvent]) {
         guard let ground = course.ground(at: x) else {
+            if let c = crouch {
+                let t = min(c / config.fullChargeTime, 1)
+                jump(slope: course.slope(at: x - 4),
+                     power: config.shortJumpVelocity + (config.longJumpVelocity - config.shortJumpVelocity) * t, events: &events)
+                return
+            }
             // Ran off a ledge into a gap: keep the velocity we had along the slope.
             leaveGround(vy: effectiveSpeed * course.slope(at: x - 4))
             coyote = 0.08
@@ -268,6 +268,7 @@ final class RunnerSim {
             if prevY >= t - 2, lowest <= t {
                 y = t - config.comHeight + reach
                 vy = -vy * config.bounceRestitution + config.bounceKick
+                bouncedThisStep = true
                 angularMomentum *= 0.5
                 events.append(.bounced)
                 return
@@ -275,6 +276,11 @@ final class RunnerSim {
         }
 
         if let ground = course.ground(at: x) {
+            if course.gap(at: prevX) != nil, prevY + config.comHeight - reach < ground - 6 {
+                // Came out of the chasm below its far rim: hit the wall and fall.
+                fall(events: &events)
+                return
+            }
             if lowest <= ground {
                 // Find the moment of contact within this step so the body never sinks into the slope.
                 var lo = 0.0, hi = 1.0
@@ -285,6 +291,8 @@ final class RunnerSim {
                     if my > course.surface(at: mx) { lo = mid } else { hi = mid }
                 }
                 x = prevX + (x - prevX) * hi
+                // Never land inside a chasm: contact is on the far rim at the earliest.
+                if let gap = course.gap(at: x) { x = gap.end + 0.5 }
                 land(at: course.surface(at: x), slope: course.slope(at: x), events: &events)
             }
         } else if y < course.minSurface - 260 {
@@ -371,14 +379,13 @@ final class RunnerSim {
     private func stepSwim(_ dt: Double, events: inout [RunnerEvent]) {
         strokeTimer = max(0, strokeTimer - dt)
         if strokePending { strokePending = false; events.append(.stroke) }
-        if stunned > 0 { stunned -= dt }
 
         boost *= exp(-dt / 1.6)
         speed += (config.baseSpeed - speed) * 0.6 * dt
         x += effectiveSpeed * dt
 
         // Thrust while held, net sink otherwise, and water drag on vertical speed.
-        if holding && stunned <= 0 { vy += config.swimThrust * dt }
+        if holding { vy += config.swimThrust * dt }
         vy -= config.swimSink * dt
         vy *= exp(-config.swimDrag * dt)
         y += vy * dt
@@ -419,7 +426,7 @@ final class RunnerSim {
 
     /// Springboard: throws the runner up from the ground.
     func launch(events: inout [RunnerEvent]) {
-        guard grounded, stunned <= 0, !swimming else { return }
+        guard grounded, !swimming else { return }
         jumpBuffer = 0
         leaveGround(vy: config.launchVelocity)
         coyote = 0
@@ -482,9 +489,12 @@ final class RunnerSim {
         crouch = nil
         jumpBuffer = 0
         coyote = 0
-        stunned = 0
         stumbling = 0
         failed = false
+        strokeTimer = 0
+        strokePending = false
+        // Start fresh: a finger still down from the failure doesn't count as a new press.
+        holding = false
         invulnerable = config.respawnGrace
     }
 

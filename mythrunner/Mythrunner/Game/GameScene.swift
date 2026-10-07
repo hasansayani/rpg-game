@@ -671,6 +671,16 @@ final class GameScene: SKScene {
         if e.respawned {
             fade.removeAllActions()
             fade.run(.fadeOut(withDuration: 0.4))
+            // Gates ahead of the checkpoint are usable again, so bring their rings back.
+            for (i, n) in gateNodes.enumerated() where n.parent == nil && !session.isGateUsed(i) {
+                n.removeAllActions()
+                n.alpha = 1
+                n.setScale(1)
+                let g = session.course.gates[i]
+                n.position = CGPoint(x: g.x, y: session.course.surface(at: g.x) + g.lift)
+                n.run(.repeatForever(.sequence([.moveBy(x: 0, y: 6, duration: 0.9), .moveBy(x: 0, y: -6, duration: 0.9)])))
+                world.addChild(n)
+            }
             // A restarted guardian encounter numbers its attacks from zero again.
             projectileNodes.values.forEach { $0.removeFromParent() }
             warningNodes.values.forEach { $0.removeFromParent() }
@@ -750,7 +760,7 @@ final class GameScene: SKScene {
 
     private func updateCamera(dt: CGFloat) {
         let r = session.runner
-        // Keep the rider left of center; in chase mode slide right so the pursuer is visible.
+        // Keep the runner left of center; in chase mode slide right so the pursuer is visible.
         let lead: CGFloat = session.phase == .guardian && session.mode == .chase ? -size.width * 0.08 : size.width * 0.18
         let targetX = CGFloat(r.x) + lead
         let targetY = max(CGFloat(r.y) + 50, size.height / 2)
